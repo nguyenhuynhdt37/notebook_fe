@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Search, LogOut } from "lucide-react";
 import { useUserStore } from "@/stores/user";
+import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,7 +20,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export default function AdminHeader() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
-  const clearUser = useUserStore((state) => state.clearUser);
 
   const getInitials = (name: string) => {
     return name
@@ -30,9 +30,8 @@ export default function AdminHeader() {
       .slice(0, 2);
   };
 
-  const handleLogout = () => {
-    clearUser();
-    router.push("/login");
+  const handleLogoutClick = () => {
+    handleLogout(router);
   };
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
@@ -94,7 +93,7 @@ export default function AdminHeader() {
               </DropdownMenuItem>
               <DropdownMenuItem>Đổi mật khẩu</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={handleLogoutClick}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Đăng xuất
               </DropdownMenuItem>

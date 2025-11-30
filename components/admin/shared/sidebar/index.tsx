@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
+import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,11 @@ const menuItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogoutClick = () => {
+    handleLogout(router);
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -74,6 +80,7 @@ export default function AdminSidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"
+          onClick={handleLogoutClick}
         >
           <LogOut className="mr-3 size-5" />
           Đăng xuất

@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import api from "@/api/client/axios";
 import { AuthResponse, ErrorResponse } from "@/types/shared/auth";
 import { useUserStore } from "@/stores/user";
-import { User } from "@/types/user/user";
+import { User as UserType } from "@/types/user/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,60 +22,97 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Login() {
+export default function Register() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const setUser = useUserStore((state) => state.setUser);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const validateForm = () => {
+    if (!email.trim()) {
+      setError("Email là bắt buộc");
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Email không hợp lệ");
+      return false;
+    }
+
+    if (!password || password.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      return false;
+    }
+
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      setError("Họ tên phải có ít nhất 2 ký tự");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await api.post<AuthResponse>("/auth/login", {
-        email,
+      const response = await api.post<AuthResponse>("/auth/register", {
+        email: email.trim(),
         password,
+        fullName: fullName.trim(),
       });
 
       if (response.data) {
         const authData = response.data;
 
-        const user: User = {
+        const user: UserType = {
           id: authData.id as unknown as number,
           fullName: authData.fullName,
           email: authData.email,
           role: authData.role,
           avatarUrl: authData.avatarUrl,
         };
-        console.log("user", user);
+
         setUser(user);
 
-        const role = authData.role?.toLowerCase();
+        toast.success("Đăng ký thành công");
 
-        const getRedirectPath = (userRole: string | undefined): string => {
-          if (!userRole) return "/";
-
-          switch (userRole) {
-            case "admin":
-            case "administrator":
-              return "/admin";
-            case "user":
-            default:
-              return "/";
-          }
-        };
-
-        toast.success("Đăng nhập thành công");
-        router.push(getRedirectPath(role));
+        const returnUrl = searchParams.get("returnUrl");
+        if (returnUrl) {
+          router.push(decodeURIComponent(returnUrl));
+        } else {
+          const role = authData.role?.toLowerCase();
+          const getRedirectPath = (userRole: string | undefined): string => {
+            if (!userRole) return "/";
+            switch (userRole) {
+              case "admin":
+              case "administrator":
+                return "/admin";
+              case "user":
+              default:
+                return "/";
+            }
+          };
+          router.push(getRedirectPath(role));
+        }
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
         const errorData = err.response.data as ErrorResponse;
-        const errorMessage = errorData.error || "Đăng nhập thất bại";
+        const errorMessage =
+          errorData.message || errorData.error || "Đăng ký thất bại";
         setError(errorMessage);
         toast.error(errorMessage);
       } else {
@@ -101,15 +138,37 @@ export default function Login() {
             />
           </div>
           <div className="text-center space-y-2">
-            <CardTitle className="text-3xl font-bold">Đăng nhập</CardTitle>
+            <CardTitle className="text-3xl font-bold">Đăng ký</CardTitle>
             <CardDescription className="text-base">
-              Chào mừng bạn trở lại
+              Tạo tài khoản mới để bắt đầu
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="fullName" className="text-sm font-medium">
+              Họ và tên
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 size-5 text-muted-foreground" />
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Nguyễn Văn A"
+                value={fullName}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (error) setError("");
+                }}
+                required
+                disabled={isLoading}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
               Email
@@ -121,7 +180,10 @@ export default function Login() {
                 type="email"
                 placeholder="nhap@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError("");
+                }}
                 required
                 disabled={isLoading}
                 className="pl-10"
@@ -138,9 +200,12 @@ export default function Login() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Nhập mật khẩu của bạn"
+                placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError("");
+                }}
                 required
                 disabled={isLoading}
                 className="pl-10"
@@ -166,17 +231,17 @@ export default function Login() {
                 Đang xử lý...
               </>
             ) : (
-              "Đăng nhập"
+              "Đăng ký"
             )}
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">
-            Chưa có tài khoản?{" "}
+            Đã có tài khoản?{" "}
             <Link
-              href="/register"
+              href="/login"
               className="text-foreground font-medium hover:underline"
             >
-              Đăng ký
+              Đăng nhập
             </Link>
           </div>
         </form>
@@ -184,3 +249,4 @@ export default function Login() {
     </Card>
   );
 }
+

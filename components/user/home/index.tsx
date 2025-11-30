@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FileText, Lightbulb, MessageSquare, ArrowRight } from "lucide-react";
+import { useUserStore } from "@/stores/user";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,8 @@ import {
 } from "@/components/ui/card";
 
 export default function Home() {
+  const user = useUserStore((state) => state.user);
+  const isLoggedIn = !!user;
   return (
     <div className="min-h-screen bg-background">
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
@@ -29,14 +32,16 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button asChild size="lg" className="group">
-              <Link href="/login">
-                Bắt đầu miễn phí
+              <Link href={isLoggedIn ? "/notebook" : "/login"}>
+                {isLoggedIn ? "Vào workspace" : "Bắt đầu miễn phí"}
                 <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/demo">Xem demo</Link>
-            </Button>
+            {!isLoggedIn && (
+              <Button asChild size="lg" variant="outline">
+                <Link href="/demo">Xem demo</Link>
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -103,8 +108,8 @@ export default function Home() {
               đổi cách bạn làm việc với thông tin.
             </CardDescription>
             <Button asChild size="lg">
-              <Link href="/login">
-                Tạo notebook miễn phí
+              <Link href={isLoggedIn ? "/notebook" : "/login"}>
+                {isLoggedIn ? "Vào workspace" : "Tạo notebook miễn phí"}
                 <ArrowRight className="ml-2 size-5" />
               </Link>
             </Button>

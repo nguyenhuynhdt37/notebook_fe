@@ -1,16 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
-import { PagedResponse, NotebookAdminResponse } from "@/types/admin/notebook";
-import NotebookFilter from "./notebook-filter";
-import NotebookCardList from "./notebook-card-list";
-import NotebookPagination from "./notebook-pagination";
-import NotebookDeleteDialog from "./notebook-delete-dialog";
-import { Button } from "@/components/ui/button";
+import { JoinedGroupsResponse } from "@/types/user/community";
+import MyGroupsFilter from "./community-filter";
+import MyGroupsCardList from "./community-card-list";
+import MyGroupsPagination from "./community-pagination";
 import {
   Card,
   CardContent,
@@ -19,27 +15,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Notebooks() {
-  const [data, setData] = useState<PagedResponse<NotebookAdminResponse> | null>(
-    null
-  );
+export default function MyGroups() {
+  const [data, setData] = useState<JoinedGroupsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [size] = useState(10);
   const [q, setQ] = useState("");
-  const [type, setType] = useState("");
-  const [visibility, setVisibility] = useState("");
+  const [status, setStatus] = useState("approved");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [notebookToDelete, setNotebookToDelete] =
-    useState<NotebookAdminResponse | null>(null);
 
   useEffect(() => {
-    loadNotebooks();
-  }, [page, q, type, visibility, sortBy, sortDir]);
+    loadGroups();
+  }, [page, q, status, sortBy, sortDir]);
 
-  const loadNotebooks = async () => {
+  const loadGroups = async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -48,18 +38,17 @@ export default function Notebooks() {
         sortBy,
         sortDir,
         ...(q && { q }),
-        ...(type && { type }),
-        ...(visibility && { visibility }),
+        ...(status && status !== "ALL" && { status }),
       });
 
-      const response = await api.get<PagedResponse<NotebookAdminResponse>>(
-        `/admin/community?${params}`
+      const response = await api.get<JoinedGroupsResponse>(
+        `/user/community/my-groups?${params}`
       );
 
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching notebooks:", error);
-      toast.error("Không thể tải danh sách notebooks");
+      console.error("Error fetching groups:", error);
+      toast.error("Không thể tải danh sách nhóm của tôi");
     } finally {
       setIsLoading(false);
     }
@@ -70,23 +59,8 @@ export default function Notebooks() {
     setPage(0);
   };
 
-  const handleTypeChange = (value: string) => {
-    setType(value === "ALL" ? "" : value);
-    setPage(0);
-  };
-
-  const handleVisibilityChange = (value: string) => {
-    setVisibility(value === "ALL" ? "" : value);
-    setPage(0);
-  };
-
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(field);
-      setSortDir("asc");
-    }
+  const handleStatusChange = (value: string) => {
+    setStatus(value);
     setPage(0);
   };
 
@@ -102,54 +76,35 @@ export default function Notebooks() {
     setPage(0);
   };
 
-  const handleDeleteClick = (notebook: NotebookAdminResponse) => {
-    setNotebookToDelete(notebook);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    loadNotebooks();
-  };
-
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Notebooks</h1>
-          <p className="text-muted-foreground mt-1.5">
-            Quản lý notebooks trong hệ thống
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/admin/notebooks/new">
-            <Plus className="mr-2 size-4" />
-            Tạo notebook
-          </Link>
-        </Button>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Nhóm của tôi</h1>
+        <p className="text-muted-foreground mt-1.5">
+          Quản lý các nhóm cộng đồng bạn đã tham gia
+        </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Tìm kiếm và lọc</CardTitle>
           <CardDescription className="mt-1">
-            Tìm kiếm và lọc notebook theo loại và hiển thị
+            Tìm kiếm và lọc nhóm theo trạng thái tham gia
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <NotebookFilter
+          <MyGroupsFilter
             q={q}
-            type={type}
-            visibility={visibility}
+            status={status}
             sortBy={sortBy}
             sortDir={sortDir}
             onQChange={handleQChange}
-            onTypeChange={handleTypeChange}
-            onVisibilityChange={handleVisibilityChange}
+            onStatusChange={handleStatusChange}
             onSortChange={handleSortChange}
           />
         </CardContent>
@@ -177,20 +132,17 @@ export default function Notebooks() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
-              {q || type || visibility
-                ? "Không tìm thấy notebook nào phù hợp"
-                : "Chưa có notebook nào trong hệ thống"}
+              {q || status !== "approved"
+                ? "Không tìm thấy nhóm nào phù hợp"
+                : "Bạn chưa tham gia nhóm nào"}
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
-          <NotebookCardList
-            notebooks={data.items}
-            onDelete={handleDeleteClick}
-          />
+          <MyGroupsCardList groups={data.items} />
           {data.meta.totalPages > 1 && (
-            <NotebookPagination
+            <MyGroupsPagination
               meta={data.meta}
               page={page}
               onPageChange={handlePageChange}
@@ -198,16 +150,7 @@ export default function Notebooks() {
           )}
         </>
       )}
-
-      {notebookToDelete && (
-        <NotebookDeleteDialog
-          notebookId={notebookToDelete.id}
-          notebookTitle={notebookToDelete.title}
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          onDelete={handleDeleteConfirm}
-        />
-      )}
     </div>
   );
 }
+
