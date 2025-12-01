@@ -120,6 +120,15 @@ export default function NotebookCardList({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() =>
+                      router.push(
+                        `/admin/notebooks/pending?notebookId=${notebook.id}`
+                      )
+                    }
+                  >
+                    Yêu cầu tham gia
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
                       router.push(`/admin/notebooks/${notebook.id}/edit`)
                     }
                   >

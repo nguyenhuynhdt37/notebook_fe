@@ -89,6 +89,9 @@ export default function AdminHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
+                <Link href="/admin/profile">Hồ sơ</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href="/admin/settings">Cài đặt</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Đổi mật khẩu</DropdownMenuItem>

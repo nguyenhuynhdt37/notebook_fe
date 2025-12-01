@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Search, Clock } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import { PagedResponse, NotebookAdminResponse } from "@/types/admin/notebook";
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/card";
 
 export default function Notebooks() {
+  const router = useRouter();
   const [data, setData] = useState<PagedResponse<NotebookAdminResponse> | null>(
     null
   );
@@ -125,12 +127,21 @@ export default function Notebooks() {
             Quản lý notebooks trong hệ thống
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/notebooks/new">
-            <Plus className="mr-2 size-4" />
-            Tạo notebook
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/notebooks/pending")}
+          >
+            <Clock className="mr-2 size-4" />
+            Yêu cầu tham gia
+          </Button>
+          <Button asChild>
+            <Link href="/admin/notebooks/new">
+              <Plus className="mr-2 size-4" />
+              Tạo notebook
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

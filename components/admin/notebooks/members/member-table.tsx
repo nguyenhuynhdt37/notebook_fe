@@ -15,6 +15,7 @@ import {
   Shield,
   Ban,
   UserX,
+  CheckCircle2,
 } from "lucide-react";
 import { MemberResponse } from "@/types/admin/member";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MemberRoleDialog from "./member-role-dialog";
+import MemberDeleteDialog from "./member-delete-dialog";
+import MemberBlockDialog from "./member-block-dialog";
 
 interface MemberTableProps {
   members: MemberResponse[];
@@ -43,6 +46,8 @@ interface MemberTableProps {
 
 export default function MemberTable({ members, onRefresh }: MemberTableProps) {
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberResponse | null>(
     null
   );
@@ -237,15 +242,18 @@ export default function MemberTable({ members, onRefresh }: MemberTableProps) {
                     {member.status === "blocked" ? (
                       <DropdownMenuItem
                         onClick={() => {
-                          // TODO: Implement unblock
+                          setSelectedMember(member);
+                          setBlockDialogOpen(true);
                         }}
                       >
-                        Bỏ chặn
+                        <CheckCircle2 className="size-4 mr-2" />
+                        Mở chặn
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem
                         onClick={() => {
-                          // TODO: Implement block
+                          setSelectedMember(member);
+                          setBlockDialogOpen(true);
                         }}
                       >
                         <Ban className="size-4 mr-2" />
@@ -277,7 +285,8 @@ export default function MemberTable({ members, onRefresh }: MemberTableProps) {
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onClick={() => {
-                            // TODO: Implement remove member
+                            setSelectedMember(member);
+                            setDeleteDialogOpen(true);
                           }}
                         >
                           <UserX className="size-4 mr-2" />
@@ -294,21 +303,53 @@ export default function MemberTable({ members, onRefresh }: MemberTableProps) {
       </Table>
 
       {selectedMember && (
-        <MemberRoleDialog
-          member={selectedMember}
-          open={roleDialogOpen}
-          onOpenChange={(open) => {
-            setRoleDialogOpen(open);
-            if (!open) {
-              setSelectedMember(null);
-            }
-          }}
-          onSuccess={() => {
-            if (onRefresh) {
-              onRefresh();
-            }
-          }}
-        />
+        <>
+          <MemberRoleDialog
+            member={selectedMember}
+            open={roleDialogOpen}
+            onOpenChange={(open) => {
+              setRoleDialogOpen(open);
+              if (!open) {
+                setSelectedMember(null);
+              }
+            }}
+            onSuccess={() => {
+              if (onRefresh) {
+                onRefresh();
+              }
+            }}
+          />
+          <MemberDeleteDialog
+            member={selectedMember}
+            open={deleteDialogOpen}
+            onOpenChange={(open) => {
+              setDeleteDialogOpen(open);
+              if (!open) {
+                setSelectedMember(null);
+              }
+            }}
+            onSuccess={() => {
+              if (onRefresh) {
+                onRefresh();
+              }
+            }}
+          />
+          <MemberBlockDialog
+            member={selectedMember}
+            open={blockDialogOpen}
+            onOpenChange={(open) => {
+              setBlockDialogOpen(open);
+              if (!open) {
+                setSelectedMember(null);
+              }
+            }}
+            onSuccess={() => {
+              if (onRefresh) {
+                onRefresh();
+              }
+            }}
+          />
+        </>
       )}
     </div>
   );
