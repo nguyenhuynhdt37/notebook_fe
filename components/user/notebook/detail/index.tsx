@@ -17,6 +17,7 @@ import api from "@/api/client/axios";
 import { CommunityPreviewResponse } from "@/types/user/community";
 import MarkdownRenderer from "@/components/shared/markdown-renderer";
 import MembershipCheck from "./membership-check";
+import Chat from "@/components/chat/chat";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -284,6 +285,8 @@ export default function NotebookDetail({ notebookId }: NotebookDetailProps) {
               )}
             </CardContent>
           </Card>
+
+          <Chat notebookId={notebookId} />
         </div>
 
         <div className="space-y-6">
