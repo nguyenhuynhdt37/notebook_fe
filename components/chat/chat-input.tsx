@@ -78,14 +78,14 @@ export default function ChatInput({
     }, []);
 
     return (
-        <div className="border-t bg-background p-4 space-y-2">
+        <div className="border-t bg-background p-4 space-y-2 shrink-0">
             {replyToMessage && (
-                <div className="flex items-center justify-between p-2 bg-muted rounded-lg text-sm">
+                <div className="flex items-center justify-between p-2 bg-muted rounded-lg text-sm border-l-4 border-primary">
                     <div className="flex-1 min-w-0">
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-foreground text-xs">
                             Trả lời {replyToMessage.userName}
                         </div>
-                        <div className="text-muted-foreground line-clamp-1">
+                        <div className="text-muted-foreground line-clamp-1 text-xs">
                             {replyToMessage.content}
                         </div>
                     </div>
@@ -93,7 +93,7 @@ export default function ChatInput({
                         variant="ghost"
                         size="icon-sm"
                         onClick={onCancelReply}
-                        className="shrink-0"
+                        className="shrink-0 h-6 w-6"
                     >
                         ×
                     </Button>
@@ -110,8 +110,8 @@ export default function ChatInput({
                     disabled={disabled}
                     rows={1}
                     className={cn(
-                        "flex-1 min-h-[40px] max-h-[120px] resize-none rounded-md border bg-background px-3 py-2 text-sm",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "flex-1 min-h-[44px] max-h-[120px] resize-none rounded-full border bg-muted px-4 py-2.5 text-sm",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring",
                         "disabled:opacity-50 disabled:cursor-not-allowed"
                     )}
                 />
@@ -119,7 +119,7 @@ export default function ChatInput({
                     onClick={handleSend}
                     disabled={!content.trim() || disabled}
                     size="icon"
-                    className="shrink-0"
+                    className="shrink-0 size-10 rounded-full"
                 >
                     <Send className="size-4" />
                 </Button>

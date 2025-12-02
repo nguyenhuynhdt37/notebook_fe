@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Message, Reaction } from "@/types/chat/message";
+import { Message, Reaction, OnlineStatus } from "@/types/chat/message";
 import ReactionPicker from "./reaction-picker";
 import { useUserStore } from "@/stores/user";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface MessageListProps {
     onLoadMore: () => void;
     hasMore: boolean;
     isLoading: boolean;
+    onlineUsers?: OnlineStatus[];
 }
 
 export default function MessageList({
@@ -24,6 +25,7 @@ export default function MessageList({
     onLoadMore,
     hasMore,
     isLoading,
+    onlineUsers = [],
 }: MessageListProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -107,11 +109,16 @@ export default function MessageList({
         );
     };
 
+    const isUserOnline = (userId: string | null) => {
+        if (!userId) return false;
+        return onlineUsers.some((u) => u.userId === userId && u.isOnline);
+    };
+
     return (
         <div
             ref={messagesContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-4 space-y-4"
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20"
         >
             {isLoading && messages.length === 0 && (
                 <div className="text-center text-muted-foreground py-8">
@@ -134,36 +141,42 @@ export default function MessageList({
                         )}
                     >
                         {!isOwnMessage && (
-                            <Avatar className="size-8 shrink-0">
-                                {message.user?.avatarUrl ? (
-                                    <AvatarImage src={message.user.avatarUrl} />
-                                ) : null}
-                                <AvatarFallback>
-                                    {message.user
-                                        ? getUserInitials(message.user.fullName)
-                                        : "?"}
-                                </AvatarFallback>
-                            </Avatar>
+                            <div className="relative shrink-0">
+                                <Avatar className="size-8">
+                                    {message.user?.avatarUrl ? (
+                                        <AvatarImage src={message.user.avatarUrl} />
+                                    ) : null}
+                                    <AvatarFallback>
+                                        {message.user
+                                            ? getUserInitials(message.user.fullName)
+                                            : "?"}
+                                    </AvatarFallback>
+                                </Avatar>
+                                {message.user &&
+                                    isUserOnline(message.user.id) && (
+                                        <div className="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-background rounded-full" />
+                                    )}
+                            </div>
                         )}
 
                         <div
                             className={cn(
-                                "flex flex-col gap-1 max-w-[70%]",
+                                "flex flex-col gap-1.5",
                                 isOwnMessage ? "items-end" : "items-start"
                             )}
                         >
                             {!isOwnMessage && message.user && (
-                                <span className="text-xs text-muted-foreground px-2">
+                                <span className="text-xs font-medium text-foreground px-2">
                                     {message.user.fullName}
                                 </span>
                             )}
 
                             <div
                                 className={cn(
-                                    "rounded-lg px-4 py-2 relative",
+                                    "rounded-2xl px-4 py-2.5 relative shadow-sm max-w-[85%] sm:max-w-[75%]",
                                     isOwnMessage
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-foreground"
+                                        ? "bg-primary text-primary-foreground rounded-br-sm ml-auto"
+                                        : "bg-background border text-foreground rounded-bl-sm"
                                 )}
                             >
                                 {replyToMessage && (
@@ -245,7 +258,7 @@ export default function MessageList({
                                 )}
                             </div>
 
-                            <span className="text-xs text-muted-foreground px-2">
+                            <span className="text-xs text-muted-foreground px-2 mt-0.5">
                                 {formatTime(message.createdAt)}
                             </span>
                         </div>

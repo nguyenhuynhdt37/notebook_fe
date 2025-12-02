@@ -4,12 +4,14 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { getWebSocketService } from "@/lib/services/websocket";
 import { getCookie } from "@/lib/utils/cookie";
 import api from "@/api/client/axios";
+import { useUserStore } from "@/stores/user";
 import type {
     Message,
     SendMessageRequest,
     ReactRequest,
     ReactionUpdate,
     TypingNotification,
+    OnlineStatus,
     ChatHistoryResponse,
 } from "@/types/chat/message";
 
@@ -19,10 +21,15 @@ interface UseWebSocketChatOptions {
 }
 
 export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOptions) {
+    const user = useUserStore((state) => state.user);
     const [messages, setMessages] = useState<Message[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const historyLoadedRef = useRef<string | null>(null);
     const [typingUsers, setTypingUsers] = useState<Map<string, TypingNotification>>(
+        new Map()
+    );
+    const [onlineUsers, setOnlineUsers] = useState<Map<string, OnlineStatus>>(
         new Map()
     );
     const [currentPage, setCurrentPage] = useState(0);
@@ -31,6 +38,13 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
     const wsServiceRef = useRef(getWebSocketService());
     const unsubscribeRef = useRef<(() => void) | null>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isConnectingRef = useRef(false);
+    const onErrorRef = useRef(onError);
+    const loadHistoryRef = useRef<((page: number) => Promise<void>) | null>(null);
+
+    useEffect(() => {
+        onErrorRef.current = onError;
+    }, [onError]);
 
     const loadHistory = useCallback(
         async (page: number = 0) => {
@@ -43,17 +57,38 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
                 );
 
                 const data = response.data;
-                if (page === 0) {
-                    setMessages(data.content.reverse());
+                console.log("Chat history response:", data);
+
+                let messages: Message[] = [];
+
+                if (Array.isArray(data)) {
+                    messages = data;
+                } else if (data?.content && Array.isArray(data.content)) {
+                    messages = data.content;
                 } else {
-                    setMessages((prev) => [...data.content.reverse(), ...prev]);
+                    console.error("Invalid messages format:", data);
+                    setMessages([]);
+                    setHasMore(false);
+                    return;
                 }
 
-                setHasMore(!data.last);
+                if (page === 0) {
+                    setMessages([...messages].reverse());
+                } else {
+                    setMessages((prev) => [...messages].reverse().concat(prev));
+                }
+
+                if (Array.isArray(data)) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(data?.last === false);
+                }
+
                 setCurrentPage(page);
+                historyLoadedRef.current = notebookId;
             } catch (error) {
                 console.error("Error loading chat history:", error);
-                onError?.(new Error("Không thể tải lịch sử chat"));
+                onErrorRef.current?.(new Error("Không thể tải lịch sử chat"));
             } finally {
                 setIsLoading(false);
             }
@@ -61,10 +96,92 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
         [notebookId, onError]
     );
 
-    const connect = useCallback(() => {
-        const token = getCookie("AUTH-TOKEN");
+    useEffect(() => {
+        loadHistoryRef.current = loadHistory;
+    }, [loadHistory]);
+
+    useEffect(() => {
+        setIsLoading(true);
+        setMessages([]);
+        historyLoadedRef.current = null;
+
+        const load = async () => {
+            try {
+                const response = await api.get<ChatHistoryResponse>(
+                    `/api/notebooks/${notebookId}/chat/history`,
+                    {
+                        params: { page: 0, size: 50 },
+                    }
+                );
+
+                const data = response.data;
+                console.log("Chat history response:", data);
+
+                let messages: Message[] = [];
+
+                if (Array.isArray(data)) {
+                    messages = data;
+                } else if (data?.content && Array.isArray(data.content)) {
+                    messages = data.content;
+                } else {
+                    console.error("Invalid messages format:", data);
+                    setMessages([]);
+                    setHasMore(false);
+                    setIsLoading(false);
+                    return;
+                }
+
+                console.log("Setting messages:", messages.length, "messages");
+                const reversedMessages = [...messages].reverse();
+                console.log("Reversed messages:", reversedMessages);
+                setMessages(reversedMessages);
+
+                if (Array.isArray(data)) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(data?.last === false);
+                }
+
+                setCurrentPage(0);
+                historyLoadedRef.current = notebookId;
+            } catch (error) {
+                console.error("Error loading chat history:", error);
+                onErrorRef.current?.(new Error("Không thể tải lịch sử chat"));
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [notebookId]);
+
+    const connect = useCallback(async () => {
+        if (isConnectingRef.current || wsServiceRef.current.isConnected()) {
+            return;
+        }
+
+        isConnectingRef.current = true;
+
+        let token = getCookie("AUTH-TOKEN");
+
         if (!token) {
-            onError?.(new Error("Không tìm thấy token xác thực"));
+            try {
+                const response = await fetch("/api/auth/token", {
+                    credentials: "include",
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.token;
+                }
+            } catch (error) {
+                console.error("Error fetching token:", error);
+            }
+        }
+
+        if (!token) {
+            isConnectingRef.current = false;
+            onErrorRef.current?.(new Error("Không tìm thấy token xác thực. Vui lòng đăng nhập lại."));
             return;
         }
 
@@ -73,11 +190,32 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
         wsService.connect({
             token,
             onConnect: () => {
+                isConnectingRef.current = false;
                 setIsConnected(true);
+
+                if (user) {
+                    const currentUserStatus: OnlineStatus = {
+                        userId: user.id.toString(),
+                        user: {
+                            id: user.id.toString(),
+                            fullName: user.fullName,
+                            email: user.email,
+                            avatarUrl: user.avatarUrl,
+                        },
+                        isOnline: true,
+                    };
+                    setOnlineUsers((prev) => {
+                        const newMap = new Map(prev);
+                        newMap.set(currentUserStatus.userId, currentUserStatus);
+                        console.log("Added current user to online list:", Array.from(newMap.values()));
+                        return newMap;
+                    });
+                }
 
                 const unsubscribe = wsService.subscribe(
                     `/topic/notebooks/${notebookId}/chat`,
                     (message) => {
+                        console.log("WebSocket message received:", message.body);
                         try {
                             const data = JSON.parse(message.body);
 
@@ -128,6 +266,32 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
                                     }
                                     return newMap;
                                 });
+                            } else if (data.userId && typeof data.isOnline === "boolean") {
+                                const status = data as OnlineStatus;
+                                console.log("Online status update:", status);
+                                setOnlineUsers((prev) => {
+                                    const newMap = new Map(prev);
+                                    if (status.isOnline) {
+                                        newMap.set(status.userId, status);
+                                    } else {
+                                        newMap.delete(status.userId);
+                                    }
+                                    console.log("Online users after update:", Array.from(newMap.values()));
+                                    return newMap;
+                                });
+                            } else if (Array.isArray(data) && data.length > 0 && data[0].userId && typeof data[0].isOnline === "boolean") {
+                                const statuses = data as OnlineStatus[];
+                                console.log("Online statuses list:", statuses);
+                                setOnlineUsers((prev) => {
+                                    const newMap = new Map();
+                                    statuses.forEach((status) => {
+                                        if (status.isOnline) {
+                                            newMap.set(status.userId, status);
+                                        }
+                                    });
+                                    console.log("Online users after list update:", Array.from(newMap.values()));
+                                    return newMap;
+                                });
                             }
                         } catch (error) {
                             console.error("Error parsing WebSocket message:", error);
@@ -136,17 +300,18 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
                 );
 
                 unsubscribeRef.current = unsubscribe;
-                loadHistory(0);
             },
             onDisconnect: () => {
+                isConnectingRef.current = false;
                 setIsConnected(false);
             },
             onError: (error) => {
+                isConnectingRef.current = false;
                 setIsConnected(false);
-                onError?.(error);
+                onErrorRef.current?.(error);
             },
         });
-    }, [notebookId, loadHistory, onError]);
+    }, [notebookId]);
 
     const disconnect = useCallback(() => {
         if (unsubscribeRef.current) {
@@ -215,20 +380,25 @@ export function useWebSocketChat({ notebookId, onError }: UseWebSocketChatOption
     }, [hasMore, isLoading, currentPage, loadHistory]);
 
     useEffect(() => {
-        connect();
+        connect().catch((error) => {
+            console.error("Error connecting WebSocket:", error);
+            onErrorRef.current?.(error);
+        });
         return () => {
             disconnect();
             if (typingTimeoutRef.current) {
                 clearTimeout(typingTimeoutRef.current);
             }
         };
-    }, [connect, disconnect]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [notebookId]);
 
     return {
         messages,
         isConnected,
         isLoading,
         typingUsers: Array.from(typingUsers.values()),
+        onlineUsers: Array.from(onlineUsers.values()),
         hasMore,
         sendMessage,
         reactToMessage,
