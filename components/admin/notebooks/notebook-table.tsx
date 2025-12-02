@@ -8,6 +8,11 @@ import {
   MoreVertical,
   FileText,
   Users,
+  FolderOpen,
+  Eye,
+  UserPlus,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { NotebookAdminResponse } from "@/types/admin/notebook";
 import { Button } from "@/components/ui/button";
@@ -173,6 +178,7 @@ export default function NotebookTable({
                         router.push(`/admin/notebooks/${notebook.id}`)
                       }
                     >
+                      <Eye className="size-4" />
                       Xem chi tiết
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -180,17 +186,28 @@ export default function NotebookTable({
                         router.push(`/admin/notebooks/${notebook.id}/members`)
                       }
                     >
+                      <Users className="size-4" />
                       Thành viên
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(`/admin/notebooks/${notebook.id}/files`)
+                      }
+                    >
+                      <FolderOpen className="size-4" />
+                      Files
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() =>
                         router.push(`/admin/notebooks/${notebook.id}/edit`)
                       }
                     >
+                      <Edit className="size-4" />
                       Chỉnh sửa
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive focus:text-destructive">
+                      <Trash2 className="size-4" />
                       Xóa
                     </DropdownMenuItem>
                   </DropdownMenuContent>
