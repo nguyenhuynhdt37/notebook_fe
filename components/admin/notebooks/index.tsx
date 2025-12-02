@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Clock } from "lucide-react";
+import { Plus, Search, Clock, FileClock } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import { PagedResponse, NotebookAdminResponse } from "@/types/admin/notebook";
@@ -134,6 +134,13 @@ export default function Notebooks() {
           >
             <Clock className="mr-2 size-4" />
             Yêu cầu tham gia
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/files/pending")}
+          >
+            <FileClock className="mr-2 size-4" />
+            Files chờ duyệt
           </Button>
           <Button asChild>
             <Link href="/admin/notebooks/new">
