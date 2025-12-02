@@ -285,8 +285,6 @@ export default function NotebookDetail({ notebookId }: NotebookDetailProps) {
               )}
             </CardContent>
           </Card>
-
-          <Chat notebookId={notebookId} />
         </div>
 
         <div className="space-y-6">

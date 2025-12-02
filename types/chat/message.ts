@@ -43,6 +43,13 @@ export interface TypingNotification {
     isTyping: boolean;
 }
 
+export interface OnlineStatus {
+    userId: string;
+    user: UserInfo;
+    isOnline: boolean;
+    lastSeen?: string;
+}
+
 export interface ChatHistoryResponse {
     content: Message[];
     totalElements: number;

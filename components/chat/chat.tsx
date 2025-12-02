@@ -24,6 +24,7 @@ export default function Chat({ notebookId }: ChatProps) {
         isConnected,
         isLoading,
         typingUsers,
+        onlineUsers,
         hasMore,
         sendMessage,
         reactToMessage,
@@ -69,13 +70,23 @@ export default function Chat({ notebookId }: ChatProps) {
     };
 
     return (
-        <Card className="flex flex-col h-[600px]">
-            <div className="border-b p-4 flex items-center justify-between">
-                <div>
-                    <h3 className="font-semibold text-lg">Chat</h3>
-                    <p className="text-sm text-muted-foreground">
-                        {isConnected ? "Đã kết nối" : "Đang kết nối..."}
-                    </p>
+        <div className="flex flex-col h-full bg-background max-w-7xl mx-auto">
+            <div className="border-b p-4 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                    <div>
+                        <h3 className="font-semibold text-lg">Chat</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                            <div
+                                className={`size-2 rounded-full ${isConnected ? "bg-green-500" : "bg-gray-400"
+                                    }`}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                {isConnected
+                                    ? `${onlineUsers.length} người online`
+                                    : "Đang kết nối..."}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -86,6 +97,7 @@ export default function Chat({ notebookId }: ChatProps) {
                 onLoadMore={loadMore}
                 hasMore={hasMore}
                 isLoading={isLoading}
+                onlineUsers={onlineUsers}
             />
 
             {typingUsers.length > 0 && (
@@ -103,7 +115,7 @@ export default function Chat({ notebookId }: ChatProps) {
                 onCancelReply={() => setReplyToMessage(null)}
                 disabled={!isConnected}
             />
-        </Card>
+        </div>
     );
 }
 
