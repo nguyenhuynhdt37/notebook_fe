@@ -1,79 +1,107 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, MessageSquare, Sparkles } from "lucide-react";
+import { Menu, X, PanelLeftClose, PanelRightClose } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import Chat from "@/components/chat/chat";
-import { Card, CardContent } from "@/components/ui/card";
+import Chat from "@/components/user/notebook/workspace/chat/chat";
+import SourcesPanel from "./sources-panel";
+import AIFeaturesPanel from "./ai-features-panel";
+import WorkspaceHeader from "./workspace-header";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface NotebookWorkspaceProps {
-    notebookId: string;
+  notebookId: string;
+  accessToken?: string;
 }
 
 export default function NotebookWorkspace({
-    notebookId,
+  notebookId,
+  accessToken,
 }: NotebookWorkspaceProps) {
-    const router = useRouter();
-    const [activeTab, setActiveTab] = useState("chat");
+  const [showSources, setShowSources] = useState(true);
+  const [showAIFeatures, setShowAIFeatures] = useState(true);
 
-    return (
-        <div className="h-screen flex flex-col bg-background">
-            <div className="border-b px-4 sm:px-6 lg:px-8 py-1 flex items-center gap-4 shrink-0">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                    <ArrowLeft className="size-4" />
-                </Button>
-                <div className="flex-1">
-                    <h1 className="text-xl font-semibold">Workspace</h1>
-                </div>
-            </div>
-
-            <div className="flex-1 overflow-hidden">
-                <Tabs
-                    value={activeTab}
-                    onValueChange={setActiveTab}
-                    className="h-full flex flex-col"
+  return (
+    <div className="h-screen flex flex-col bg-background">
+      <WorkspaceHeader>
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSources(!showSources)}
+                  className="lg:hidden"
                 >
-                    <div className="border-b px-4 sm:px-6 lg:px-8 shrink-0">
-                        <TabsList>
-                            <TabsTrigger value="chat" className="gap-2">
-                                <MessageSquare className="size-4" />
-                                Chat
-                            </TabsTrigger>
-                            <TabsTrigger value="ai" className="gap-2">
-                                <Sparkles className="size-4" />
-                                AI
-                            </TabsTrigger>
-                        </TabsList>
-                    </div>
-
-                    <TabsContent value="chat" className="flex-1 m-0 p-0 overflow-hidden">
-                        <div className="h-full">
-                            <Chat notebookId={notebookId} />
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="ai" className="flex-1 m-0 p-4 sm:p-6 lg:p-8">
-                        <Card className="h-full">
-                            <CardContent className="flex items-center justify-center h-full">
-                                <div className="text-center space-y-4">
-                                    <Sparkles className="size-12 text-muted-foreground mx-auto" />
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-2">
-                                            Tính năng AI đang phát triển
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Tính năng này sẽ sớm có mặt
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </div>
+                  {showSources ? (
+                    <PanelLeftClose className="size-4" />
+                  ) : (
+                    <Menu className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{showSources ? "Ẩn nguồn" : "Hiện nguồn"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowAIFeatures(!showAIFeatures)}
+                  className="lg:hidden"
+                >
+                  {showAIFeatures ? (
+                    <PanelRightClose className="size-4" />
+                  ) : (
+                    <Menu className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {showAIFeatures ? "Ẩn tính năng AI" : "Hiện tính năng AI"}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-    );
-}
+      </WorkspaceHeader>
 
+      <div className="flex-1 overflow-hidden flex bg-gradient-to-br from-muted/5 via-background to-muted/5">
+        {/* Sources Panel - Left */}
+        <div
+          className={`${
+            showSources ? "flex-[1]" : "hidden"
+          } min-w-0 overflow-hidden transition-all duration-300 border-r border-border/50 bg-background/80 backdrop-blur-sm shadow-[2px_0_12px_rgba(0,0,0,0.03)]`}
+        >
+          <SourcesPanel notebookId={notebookId} />
+        </div>
+
+        {/* Chat Panel - Center */}
+        <div className="flex-[2] min-w-0 overflow-hidden bg-background shadow-[inset_0_0_30px_rgba(0,0,0,0.02)] relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-muted/3 pointer-events-none" />
+          <Chat notebookId={notebookId} accessToken={accessToken} />
+        </div>
+
+        {/* AI Features Panel - Right */}
+        <div
+          className={`${
+            showAIFeatures ? "flex-[1]" : "hidden"
+          } min-w-0 overflow-hidden transition-all duration-300 border-l border-border/50 bg-background/80 backdrop-blur-sm shadow-[-2px_0_12px_rgba(0,0,0,0.03)]`}
+        >
+          <AIFeaturesPanel notebookId={notebookId} />
+        </div>
+      </div>
+    </div>
+  );
+}
