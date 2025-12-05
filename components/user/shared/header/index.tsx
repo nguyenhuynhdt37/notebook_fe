@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import NotificationDropdown from "./notification-dropdown";
 
 export default function Header() {
   const router = useRouter();
@@ -88,6 +89,7 @@ export default function Header() {
               Về chúng tôi
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-foreground group-hover:w-full transition-all duration-300"></span>
             </Link>
+            {user && <NotificationDropdown />}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

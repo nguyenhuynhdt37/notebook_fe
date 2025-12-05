@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Search, LogOut } from "lucide-react";
+import { Search, LogOut } from "lucide-react";
 import { useUserStore } from "@/stores/user";
 import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import NotificationDropdown from "@/components/user/shared/header/notification-dropdown";
 
 export default function AdminHeader() {
   const router = useRouter();
@@ -56,9 +57,7 @@ export default function AdminHeader() {
             <Search className="size-5" />
           </Button>
 
-          <Button variant="ghost" size="icon">
-            <Bell className="size-5" />
-          </Button>
+          <NotificationDropdown />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

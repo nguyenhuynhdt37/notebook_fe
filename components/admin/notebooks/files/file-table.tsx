@@ -23,6 +23,7 @@ import FilePreviewDialog from "./file-preview-dialog";
 
 interface FileTableProps {
   files: NotebookFileResponse[];
+  onRetrySuccess?: () => void;
 }
 
 const statusConfig: Record<
@@ -120,7 +121,10 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
-export default function FileTable({ files }: FileTableProps) {
+export default function FileTable({
+  files,
+  onRetrySuccess,
+}: FileTableProps) {
   const [previewFile, setPreviewFile] = useState<NotebookFileResponse | null>(
     null
   );
@@ -241,7 +245,7 @@ export default function FileTable({ files }: FileTableProps) {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <FileActions file={file} />
+                    <FileActions file={file} onRetrySuccess={onRetrySuccess} />
                   </TableCell>
                 </TableRow>
               );

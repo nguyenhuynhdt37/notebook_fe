@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, Upload, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import {
@@ -12,6 +12,7 @@ import {
 import FileFilter from "./file-filter";
 import FileTable from "./file-table";
 import FilePagination from "./file-pagination";
+import FileUpload from "./create";
 import {
   Card,
   CardContent,
@@ -19,6 +20,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+
+interface RetryAllResponse {
+  retriedCount: number;
+  message: string;
+}
 
 export default function Files() {
   const params = useParams();
@@ -36,6 +61,9 @@ export default function Files() {
   const [embeddingDone, setEmbeddingDone] = useState("");
   const [uploadedBy, setUploadedBy] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [retryAllDialogOpen, setRetryAllDialogOpen] = useState(false);
+  const [retryAllLoading, setRetryAllLoading] = useState(false);
 
   useEffect(() => {
     if (notebookId) {
@@ -122,13 +150,68 @@ export default function Files() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleUploadSuccess = () => {
+    loadFiles();
+    setUploadDialogOpen(false);
+  };
+
+  const handleRetrySuccess = () => {
+    loadFiles();
+  };
+
+  const failedFilesCount =
+    data?.content.filter((file) => file.status === "failed").length || 0;
+
+  const handleRetryAll = async () => {
+    try {
+      setRetryAllLoading(true);
+      const response = await api.put<RetryAllResponse>(
+        `/admin/notebooks/${notebookId}/files/retry-all`
+      );
+      const result = response.data;
+      toast.success(
+        `Đã thử lại ${result.retriedCount} file(s) bị lỗi!\n${result.message}`
+      );
+      setRetryAllDialogOpen(false);
+      loadFiles();
+    } catch (err: unknown) {
+      const errorMessage =
+        err && typeof err === "object" && "response" in err
+          ? (err as any).response?.data?.message || "Lỗi khi thử lại files"
+          : "Lỗi không xác định";
+      toast.error(errorMessage);
+    } finally {
+      setRetryAllLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Danh sách Files</h1>
-        <p className="text-muted-foreground mt-1.5">
-          Quản lý files trong notebook
-        </p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Danh sách Files</h1>
+          <p className="text-muted-foreground mt-1.5">
+            Quản lý files trong notebook
+          </p>
+        </div>
+        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Upload className="size-4" />
+              Upload Files
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Upload Files</DialogTitle>
+            </DialogHeader>
+            <FileUpload
+              notebookId={notebookId}
+              onUploadSuccess={handleUploadSuccess}
+              onClose={() => setUploadDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
@@ -169,8 +252,54 @@ export default function Files() {
                 {data
                   ? `Tổng cộng ${data.totalElements} file`
                   : "Tất cả files trong notebook"}
+                {failedFilesCount > 0 && (
+                  <span className="ml-2 text-destructive">
+                    ({failedFilesCount} file(s) bị lỗi)
+                  </span>
+                )}
               </CardDescription>
             </div>
+            {failedFilesCount > 0 && (
+              <AlertDialog
+                open={retryAllDialogOpen}
+                onOpenChange={setRetryAllDialogOpen}
+              >
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline">
+                    <RotateCw className="size-4" />
+                    Thử lại tất cả ({failedFilesCount})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Thử lại tất cả files bị lỗi
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Bạn có chắc chắn muốn thử lại xử lý cho {failedFilesCount}{" "}
+                      file(s) bị lỗi?
+                      <br />
+                      <br />
+                      <span className="font-medium text-foreground">
+                        Lưu ý: Tất cả chunks cũ của các files này sẽ bị xóa và
+                        tạo lại từ đầu.
+                      </span>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={retryAllLoading}>
+                      Hủy
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleRetryAll}
+                      disabled={retryAllLoading}
+                    >
+                      {retryAllLoading ? "Đang xử lý..." : "Thử lại tất cả"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </CardHeader>
         <CardContent className="pt-0">
@@ -188,7 +317,10 @@ export default function Files() {
             </div>
           ) : data && data.content.length > 0 ? (
             <div className="space-y-4">
-              <FileTable files={data.content} />
+              <FileTable
+                files={data.content}
+                onRetrySuccess={handleRetrySuccess}
+              />
               {data.totalPages > 1 && (
                 <div className="pt-4 border-t">
                   <FilePagination
