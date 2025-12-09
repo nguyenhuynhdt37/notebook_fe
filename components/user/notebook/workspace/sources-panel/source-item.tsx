@@ -1,17 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { X, File, Video, Music, FileQuestion } from "lucide-react";
+import {
+  MoreVertical,
+  File,
+  Video,
+  Music,
+  FileQuestion,
+  Eye,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -102,12 +110,17 @@ export default function SourceItem({
   const canRemove = isMyFile && onRemove;
   const canSelect = source.status === "done" && onToggleSelect;
 
-  const handleFileClick = () => {
+  const handleItemClick = () => {
+    if (canSelect) {
+      onToggleSelect?.(source.id);
+    }
+  };
+
+  const handleViewDetail = () => {
     onViewDetail?.(source.id);
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDeleteClick = () => {
     setShowDeleteDialog(true);
   };
 
@@ -133,12 +146,12 @@ export default function SourceItem({
   return (
     <>
       <div
-        className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all cursor-pointer ${
+        className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
           selected
-            ? "bg-muted/50 border border-border/60"
-            : "hover:bg-muted/30 border border-transparent"
-        }`}
-        onClick={handleFileClick}
+            ? "bg-muted/60 border border-border/60 shadow-sm"
+            : "hover:bg-muted/40 border border-transparent"
+        } ${canSelect ? "cursor-pointer" : ""}`}
+        onClick={handleItemClick}
       >
         {canSelect && (
           <div
@@ -146,53 +159,65 @@ export default function SourceItem({
             onClick={handleCheckboxClick}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <Checkbox checked={selected} className="size-4" />
+            <Checkbox checked={selected} className="size-4.5" />
           </div>
         )}
-        <div className="shrink-0">
-          <IconComponent className="size-4 text-muted-foreground" />
+        <div className="shrink-0 p-1.5 rounded-md bg-muted/50">
+          <IconComponent className="size-4 text-foreground" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate text-foreground leading-snug">
+          <p className="text-sm font-semibold truncate text-foreground leading-tight">
             {source.originalFilename}
           </p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className="text-xs text-muted-foreground font-medium">
               {formatFileSize(source.fileSize)}
             </span>
             <Badge
               variant={getStatusVariant(source.status)}
-              className="text-[10px] px-1.5 py-0 h-4 font-normal"
+              className="text-xs px-2 py-0.5 h-5 font-medium"
             >
               {getStatusLabel(source.status)}
             </Badge>
             {source.uploadedBy && (
               <span className="text-xs text-muted-foreground truncate">
-                • {source.uploadedBy.fullName}
-                {isMyFile && <span className="text-foreground/60"> (bạn)</span>}
+                {source.uploadedBy.fullName}
+                {isMyFile && <span className="text-foreground/70 font-medium"> (bạn)</span>}
               </span>
             )}
           </div>
         </div>
-        {canRemove && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="shrink-0 opacity-0 group-hover:opacity-100 h-7 w-7"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 opacity-0 group-hover:opacity-100 size-8 hover:bg-muted/60"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={handleViewDetail} className="gap-2">
+              <Eye className="size-4" />
+              <span className="text-sm">Xem chi tiết</span>
+            </DropdownMenuItem>
+            {canRemove && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
                   onClick={handleDeleteClick}
+                  variant="destructive"
+                  className="gap-2"
                 >
-                  <X className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Xóa</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
+                  <Trash2 className="size-4" />
+                  <span className="text-sm">Xóa</span>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {canRemove && (

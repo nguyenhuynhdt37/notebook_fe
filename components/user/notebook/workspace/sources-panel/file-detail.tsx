@@ -119,8 +119,10 @@ export default function FileDetail({
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="size-6 animate-spin text-muted-foreground mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">Đang tải...</p>
+          <Loader2 className="size-8 animate-spin text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground font-medium">
+            Đang tải...
+          </p>
         </div>
       </div>
     );
@@ -130,12 +132,19 @@ export default function FileDetail({
     return (
       <div className="h-full flex items-center justify-center px-4">
         <div className="text-center">
-          <AlertCircle className="size-8 text-muted-foreground mx-auto mb-3" />
-          <h3 className="text-sm font-semibold mb-1">Có lỗi xảy ra</h3>
-          <p className="text-xs text-muted-foreground mb-3">{error}</p>
+          <AlertCircle className="size-10 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-base font-semibold mb-1.5 text-foreground">
+            Có lỗi xảy ra
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">{error}</p>
           {onBack && (
-            <Button onClick={onBack} variant="outline" size="sm">
-              <ArrowLeft className="size-3 mr-1.5" />
+            <Button
+              onClick={onBack}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <ArrowLeft className="size-4" />
               Quay lại
             </Button>
           )}
@@ -151,25 +160,30 @@ export default function FileDetail({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <div className="border-b border-border/60 bg-background px-3 py-2 shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="border-b border-border/50 bg-background px-4 py-3 shrink-0">
+        <div className="flex items-center gap-3">
           {onBack && (
-            <Button variant="ghost" size="icon-sm" onClick={onBack}>
-              <ArrowLeft className="size-3.5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="size-8 hover:bg-muted/60"
+            >
+              <ArrowLeft className="size-4" />
             </Button>
           )}
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold truncate">
+            <h2 className="text-base font-semibold text-foreground truncate leading-tight">
               {fileDetail.fileInfo.originalFilename}
             </h2>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-2 mt-1.5">
               <Badge
                 variant={getStatusVariant(fileDetail.fileInfo.status)}
-                className="text-[10px] px-1.5 py-0 h-4"
+                className="text-xs px-2 py-0.5 h-5 font-medium"
               >
                 {getStatusLabel(fileDetail.fileInfo.status)}
               </Badge>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground font-medium">
                 {formatFileSize(fileDetail.fileInfo.fileSize)}
               </span>
             </div>
@@ -179,16 +193,19 @@ export default function FileDetail({
 
       <div className="flex-1 overflow-hidden">
         <Tabs defaultValue="content" className="h-full flex flex-col">
-          <div className="border-b border-border/60 px-3 shrink-0">
-            <TabsList className="bg-transparent h-8">
+          <div className="border-b border-border/50 px-4 shrink-0">
+            <TabsList className="bg-transparent h-9 gap-1">
               <TabsTrigger
                 value="content"
-                className="text-xs"
+                className="text-sm px-4 data-[state=active]:bg-muted/60"
                 disabled={chunks.length === 0}
               >
                 Nội dung
               </TabsTrigger>
-              <TabsTrigger value="info" className="text-xs">
+              <TabsTrigger
+                value="info"
+                className="text-sm px-4 data-[state=active]:bg-muted/60"
+              >
                 Thông tin
               </TabsTrigger>
             </TabsList>
@@ -196,13 +213,13 @@ export default function FileDetail({
 
           <TabsContent
             value="content"
-            className="flex-1 overflow-y-auto m-0 p-3"
+            className="flex-1 overflow-y-auto m-0 p-4"
           >
             {chunksLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">
+                  <Loader2 className="size-6 animate-spin text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">
                     Đang tải nội dung...
                   </p>
                 </div>
@@ -210,49 +227,61 @@ export default function FileDetail({
             ) : chunks.length === 0 ? (
               <div className="flex items-center justify-center h-full px-4">
                 <div className="text-center">
-                  <FileText className="size-8 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-xs text-muted-foreground">
+                  <FileText className="size-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">
                     File chưa có nội dung hoặc chưa được xử lý
                   </p>
                 </div>
               </div>
             ) : (
-              <pre className="whitespace-pre-wrap text-xs bg-muted/20 p-3 rounded border border-border/40 leading-relaxed font-mono">
-                {fullContent}
-              </pre>
+              <div className="bg-muted/30 rounded-lg border border-border/50 p-4">
+                <pre className="whitespace-pre-wrap text-sm text-foreground leading-relaxed font-mono">
+                  {fullContent}
+                </pre>
+              </div>
             )}
           </TabsContent>
 
-          <TabsContent value="info" className="flex-1 overflow-y-auto m-0 p-3">
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Thông tin file</CardTitle>
+          <TabsContent value="info" className="flex-1 overflow-y-auto m-0 p-4">
+            <div className="space-y-4">
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold">
+                    Thông tin file
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-xs">
-                  <div className="grid grid-cols-2 gap-3">
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Tên file</p>
-                      <p className="font-medium truncate">
+                      <p className="text-xs text-muted-foreground mb-1.5 font-medium">
+                        Tên file
+                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate">
                         {fileDetail.fileInfo.originalFilename}
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Kích thước</p>
-                      <p className="font-medium">
+                      <p className="text-xs text-muted-foreground mb-1.5 font-medium">
+                        Kích thước
+                      </p>
+                      <p className="text-sm font-semibold text-foreground">
                         {formatFileSize(fileDetail.fileInfo.fileSize)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Loại file</p>
-                      <p className="font-medium truncate">
+                      <p className="text-xs text-muted-foreground mb-1.5 font-medium">
+                        Loại file
+                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate">
                         {fileDetail.fileInfo.mimeType}
                       </p>
                     </div>
                     {fileDetail.fileInfo.pagesCount && (
                       <div>
-                        <p className="text-muted-foreground mb-0.5">Số trang</p>
-                        <p className="font-medium">
+                        <p className="text-xs text-muted-foreground mb-1.5 font-medium">
+                          Số trang
+                        </p>
+                        <p className="text-sm font-semibold text-foreground">
                           {fileDetail.fileInfo.pagesCount}
                         </p>
                       </div>
@@ -261,41 +290,43 @@ export default function FileDetail({
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Nội dung đã tạo</CardTitle>
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold">
+                    Nội dung đã tạo
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-center p-2 bg-muted/30 rounded border border-border/40">
-                      <p className="text-lg font-bold">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center p-3 bg-muted/40 rounded-lg border border-border/50">
+                      <p className="text-2xl font-bold text-foreground">
                         {fileDetail.generatedContentCounts.video}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1.5 font-medium">
                         Video
                       </p>
                     </div>
-                    <div className="text-center p-2 bg-muted/30 rounded border border-border/40">
-                      <p className="text-lg font-bold">
+                    <div className="text-center p-3 bg-muted/40 rounded-lg border border-border/50">
+                      <p className="text-2xl font-bold text-foreground">
                         {fileDetail.generatedContentCounts.podcast}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1.5 font-medium">
                         Podcast
                       </p>
                     </div>
-                    <div className="text-center p-2 bg-muted/30 rounded border border-border/40">
-                      <p className="text-lg font-bold">
+                    <div className="text-center p-3 bg-muted/40 rounded-lg border border-border/50">
+                      <p className="text-2xl font-bold text-foreground">
                         {fileDetail.generatedContentCounts.flashcard}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1.5 font-medium">
                         Flashcard
                       </p>
                     </div>
-                    <div className="text-center p-2 bg-muted/30 rounded border border-border/40">
-                      <p className="text-lg font-bold">
+                    <div className="text-center p-3 bg-muted/40 rounded-lg border border-border/50">
+                      <p className="text-2xl font-bold text-foreground">
                         {fileDetail.generatedContentCounts.quiz}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1.5 font-medium">
                         Quiz
                       </p>
                     </div>
@@ -304,28 +335,30 @@ export default function FileDetail({
               </Card>
 
               {fileDetail.contributor && (
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Người đóng góp</CardTitle>
+                <Card className="border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold">
+                      Người đóng góp
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="size-8">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-10 border border-border/50">
                         {fileDetail.contributor.avatarUrl ? (
                           <AvatarImage
                             src={fileDetail.contributor.avatarUrl}
                             alt={fileDetail.contributor.fullName}
                           />
                         ) : null}
-                        <AvatarFallback className="bg-muted text-xs">
+                        <AvatarFallback className="bg-muted text-sm font-semibold">
                           {getInitials(fileDetail.contributor.fullName)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-xs font-medium">
+                        <p className="text-sm font-semibold text-foreground">
                           {fileDetail.contributor.fullName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {fileDetail.contributor.email}
                         </p>
                       </div>

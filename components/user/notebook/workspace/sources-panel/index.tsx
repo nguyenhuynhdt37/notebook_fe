@@ -26,7 +26,7 @@ export default function SourcesPanel({
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
 
   const fetchFiles = useCallback(
-    async (searchTerm?: string) => {
+    async (searchTerm?: string, autoSelect = false) => {
       if (!notebookId) return;
 
       setLoading(true);
@@ -38,7 +38,18 @@ export default function SourcesPanel({
           `/user/notebooks/${notebookId}/files`,
           { params }
         );
-        setFiles(response.data);
+        const fetchedFiles = response.data;
+        setFiles(fetchedFiles);
+
+        // Tự động chọn tất cả file có status === "done" khi load lần đầu hoặc khi autoSelect = true
+        if (autoSelect || !searchTerm) {
+          const availableFiles = fetchedFiles.filter(
+            (f) => f.status === "done"
+          );
+          if (availableFiles.length > 0) {
+            setSelectedFiles(new Set(availableFiles.map((f) => f.id)));
+          }
+        }
       } catch (err: any) {
         if (err.response?.status === 401) {
           setError("Vui lòng đăng nhập");
@@ -106,12 +117,12 @@ export default function SourcesPanel({
   }, [selectedFiles, onSelectionChange]);
 
   useEffect(() => {
-    fetchFiles();
+    fetchFiles(undefined, true); // Tự động chọn khi load lần đầu
   }, [fetchFiles]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchFiles(search);
+      fetchFiles(search, false); // Không tự động chọn khi search
     }, 300);
 
     return () => clearTimeout(timeoutId);
@@ -129,21 +140,21 @@ export default function SourcesPanel({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <div className="border-b border-border/60 bg-background px-3 py-2.5 shrink-0">
+      <div className="border-b border-border/50 bg-background px-4 py-3 shrink-0">
         <SourceSearch
           onSelectAll={handleSelectAll}
           selectedCount={selectedFiles.size}
           totalCount={files.filter((f) => f.status === "done").length}
         />
         <Input
-          placeholder="Tìm kiếm..."
+          placeholder="Tìm kiếm nguồn..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-8 text-xs mt-2 bg-muted/30 border-border/40 focus:border-border focus:ring-1 focus:ring-ring/20"
+          className="h-9 text-sm mt-2 bg-muted/40 border-border/50 focus:border-border focus:ring-1 focus:ring-ring/20"
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-2">
+      <div className="flex-1 overflow-y-auto px-3 py-3">
         <SourceList
           sources={files}
           notebookId={notebookId}
@@ -159,4 +170,3 @@ export default function SourcesPanel({
     </div>
   );
 }
-

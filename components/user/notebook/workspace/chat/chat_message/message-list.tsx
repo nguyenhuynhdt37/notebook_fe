@@ -170,41 +170,41 @@ export default function MessageList({
               {!isOwnMessage && message.user && (
                 <div className="flex items-center gap-2 px-2">
                   <span className="text-xs font-semibold text-foreground">
-                  {message.user.fullName}
-                </span>
+                    {message.user.fullName}
+                  </span>
                 </div>
               )}
 
               <div className="relative group/message max-w-[50%]">
-              <div
-                className={cn(
+                <div
+                  className={cn(
                     "rounded-2xl px-4 py-3 relative shadow-md w-full transition-all duration-200",
-                  isOwnMessage
+                    isOwnMessage
                       ? "bg-primary text-primary-foreground rounded-br-md shadow-lg"
                       : "bg-background border border-border/60 text-foreground rounded-bl-md hover:shadow-lg hover:border-border/80"
-                )}
-              >
-                {replyToMessage && (
-                  <div
-                    className={cn(
+                  )}
+                >
+                  {replyToMessage && (
+                    <div
+                      className={cn(
                         "text-xs mb-3 pb-2.5 border-l-2 pl-3 rounded-lg",
-                      isOwnMessage
+                        isOwnMessage
                           ? "border-primary-foreground/40 bg-primary-foreground/10"
                           : "border-border/60 bg-muted/40"
-                    )}
-                  >
+                      )}
+                    >
                       <div className="font-semibold mb-1">
-                      {replyToMessage.user?.fullName || "Người dùng"}
-                    </div>
+                        {replyToMessage.user?.fullName || "Người dùng"}
+                      </div>
                       <div className="line-clamp-2 opacity-80">
                         {replyToMessage.content}
                       </div>
-                  </div>
-                )}
+                    </div>
+                  )}
 
                   <p className="text-sm leading-relaxed whitespace-pre-wrap wrap-break-word">
-                  {message.content}
-                </p>
+                    {message.content}
+                  </p>
 
                   {message.reactions.length > 0 && (
                     <div className="flex items-center gap-1.5 mt-3 flex-wrap">
@@ -248,13 +248,13 @@ export default function MessageList({
                   >
                     <Popover>
                       <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           className="h-7 w-7 rounded-lg hover:bg-muted/80 shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
-                    >
+                        >
                           <Smile className="size-3.5" />
-                    </Button>
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent
                         side="top"
