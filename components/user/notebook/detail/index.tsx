@@ -17,7 +17,7 @@ import api from "@/api/client/axios";
 import { CommunityPreviewResponse } from "@/types/user/community";
 import MarkdownRenderer from "@/components/shared/markdown-renderer";
 import MembershipCheck from "./membership-check";
-import Chat from "@/components/user/notebook/workspace/chat/chat";
+import Chat from "@/components/user/notebook/workspace/chat";
 import { Button } from "@/components/ui/button";
 import {
   Card,

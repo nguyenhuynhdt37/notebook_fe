@@ -167,4 +167,3 @@ export default function GroupChat({ notebookId, accessToken }: GroupChatProps) {
     </div>
   );
 }
-

@@ -2,18 +2,23 @@
 
 import { MessageSquare, Bot } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import GroupChat from "./group-chat";
+import GroupChat from "./chat_message/group-chat";
 import Chatbot from "./chatbot";
 
 interface ChatProps {
   notebookId: string;
   accessToken?: string;
+  selectedFileIds?: string[];
 }
 
-export default function Chat({ notebookId, accessToken }: ChatProps) {
+export default function Chat({
+  notebookId,
+  accessToken,
+  selectedFileIds = [],
+}: ChatProps) {
   return (
     <div className="flex flex-col h-full bg-background relative">
-      <Tabs defaultValue="group" className="h-full flex flex-col">
+      <Tabs defaultValue="chatbot" className="h-full flex flex-col">
         <div className="border-b border-border/60 bg-gradient-to-br from-muted/40 via-muted/20 to-muted/40 px-4 sm:px-6 py-3.5 shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.03)] backdrop-blur-sm relative z-10">
           <TabsList className="w-full justify-start bg-transparent h-auto p-0 gap-1">
             <TabsTrigger
@@ -31,14 +36,14 @@ export default function Chat({ notebookId, accessToken }: ChatProps) {
               Chatbot
             </TabsTrigger>
           </TabsList>
-      </div>
+        </div>
 
         <TabsContent value="group" className="flex-1 m-0 overflow-hidden">
           <GroupChat notebookId={notebookId} accessToken={accessToken} />
         </TabsContent>
 
         <TabsContent value="chatbot" className="flex-1 m-0 overflow-hidden">
-          <Chatbot notebookId={notebookId} />
+          <Chatbot notebookId={notebookId} selectedFileIds={selectedFileIds} />
         </TabsContent>
       </Tabs>
     </div>

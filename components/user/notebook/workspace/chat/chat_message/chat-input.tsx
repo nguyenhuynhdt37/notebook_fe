@@ -86,7 +86,7 @@ export default function ChatInput({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-semibold text-foreground">
-              Trả lời {replyToMessage.userName}
+                Trả lời {replyToMessage.userName}
               </span>
             </div>
             <div className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -106,21 +106,21 @@ export default function ChatInput({
 
       <div className="flex items-end gap-3">
         <div className="flex-1 relative">
-        <textarea
-          ref={textareaRef}
-          value={content}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
             placeholder="Nhập tin nhắn..."
-          disabled={disabled}
-          rows={1}
-          className={cn(
+            disabled={disabled}
+            rows={1}
+            className={cn(
               "flex-1 w-full min-h-[48px] max-h-[120px] resize-none rounded-xl border border-border/60 bg-background/90 backdrop-blur-sm px-4 py-3 pr-12 text-sm",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:border-ring/60 focus-visible:shadow-sm",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "placeholder:text-muted-foreground/60 transition-all"
-          )}
-        />
+            )}
+          />
           <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground/60">
             Enter để gửi
           </div>

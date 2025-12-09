@@ -601,6 +601,88 @@
   border: 1px solid #e5e7eb !important;
 }
 
+/* Image grid for chatbot - 2 columns */
+.chatbot-markdown-wrapper .chatbot-markdown img {
+  max-width: 100% !important;
+  width: 100% !important;
+  max-height: 400px !important;
+  height: 400px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+  margin: 0 !important;
+  display: block !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  cursor: pointer !important;
+  transition: box-shadow 0.2s !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown img:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Image grid container (created by JS) - 1 column only */
+.chatbot-markdown-wrapper .chatbot-markdown .chatbot-image-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin: 1em 0 !important;
+  width: 100% !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown .chatbot-image-grid img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 400px !important;
+  max-height: 400px !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Paragraphs with single image - full width */
+.chatbot-markdown-wrapper .chatbot-markdown p:has(img:only-child) {
+  text-align: left !important; /* Override justify for image containers */
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown p:has(img:only-child) img {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 400px !important;
+  height: 400px !important;
+  object-fit: cover !important;
+  margin: 0.5em 0 !important;
+}
+
+/* Paragraphs with multiple images - 1 column */
+.chatbot-markdown-wrapper .chatbot-markdown p:has(img:nth-child(2)) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin: 1em 0 !important;
+  text-align: left !important; /* Override justify for image containers */
+}
+
+/* Images that are direct children (standalone images) */
+.chatbot-markdown-wrapper .chatbot-markdown > img {
+  max-width: 100% !important;
+  width: 100% !important;
+  max-height: 400px !important;
+  height: 400px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+  margin: 1em 0 !important;
+  display: block !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  cursor: pointer !important;
+  transition: box-shadow 0.2s !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown > img:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+
 /* Horizontal Rule improvements */
 .markdown-content hr {
   margin: 2em 0 !important;
@@ -771,4 +853,175 @@
     padding: 0.5em 0.75em !important;
     margin: 0.75em 0 !important;
   }
+}
+
+/* Chatbot Markdown Styles */
+.chatbot-markdown-wrapper {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown {
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown p {
+  margin: 0.5em 0 !important;
+  color: inherit !important;
+  text-align: justify !important;
+  text-justify: inter-word !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown p:first-child {
+  margin-top: 0 !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown p:last-child {
+  margin-bottom: 0 !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown h1,
+.chatbot-markdown-wrapper .chatbot-markdown h2,
+.chatbot-markdown-wrapper .chatbot-markdown h3,
+.chatbot-markdown-wrapper .chatbot-markdown h4,
+.chatbot-markdown-wrapper .chatbot-markdown h5,
+.chatbot-markdown-wrapper .chatbot-markdown h6 {
+  margin-top: 0.75em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+  color: inherit !important;
+  line-height: 1.3 !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown h1 {
+  font-size: 1.25em !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown h2 {
+  font-size: 1.125em !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown h3 {
+  font-size: 1em !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown ul,
+.chatbot-markdown-wrapper .chatbot-markdown ol {
+  margin: 0.5em 0 !important;
+  padding-left: 1.5em !important;
+  color: inherit !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown li {
+  margin: 0.25em 0 !important;
+  color: inherit !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown code {
+  background: rgba(0, 0, 0, 0.05) !important;
+  padding: 0.15em 0.35em !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.9em !important;
+  color: inherit !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown pre {
+  margin: 0.75em 0 !important;
+  padding: 0.75em !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-radius: 0.5rem !important;
+  overflow-x: auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown pre code {
+  background: transparent !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  /* Don't override highlight.js colors */
+}
+
+/* Syntax highlighting for chatbot markdown - let highlight.js handle colors */
+.chatbot-markdown-wrapper .chatbot-markdown .hljs {
+  background: transparent !important;
+  /* Don't override colors - let highlight.js theme (github-dark.css) handle it */
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown blockquote {
+  margin: 0.75em 0 !important;
+  padding: 0.5em 0.75em !important;
+  border-left: 3px solid currentColor !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-radius: 0 0.25rem 0.25rem 0 !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown strong,
+.chatbot-markdown-wrapper .chatbot-markdown b {
+  font-weight: 600 !important;
+  color: inherit !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown em,
+.chatbot-markdown-wrapper .chatbot-markdown i {
+  font-style: italic !important;
+  color: inherit !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown a {
+  color: inherit !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown a:hover {
+  opacity: 0.8 !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown table {
+  margin: 0.75em 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  border-collapse: collapse !important;
+  overflow-x: auto !important;
+  display: block !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown table thead,
+.chatbot-markdown-wrapper .chatbot-markdown table tbody,
+.chatbot-markdown-wrapper .chatbot-markdown table tr {
+  display: table !important;
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown table th,
+.chatbot-markdown-wrapper .chatbot-markdown table td {
+  padding: 0.5em !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown table th {
+  font-weight: 600 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.chatbot-markdown-wrapper .chatbot-markdown hr {
+  margin: 1em 0 !important;
+  border: none !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
