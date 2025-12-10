@@ -245,7 +245,10 @@ export default function NotebookWorkspace({
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <AIFeaturesPanel notebookId={notebookId} />
+            <AIFeaturesPanel
+              notebookId={notebookId}
+              selectedFileIds={selectedFileIds}
+            />
           </div>
         )}
       </div>
