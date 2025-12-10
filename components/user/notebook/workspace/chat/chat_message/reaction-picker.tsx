@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const EMOJIS = [
   { emoji: "👍", label: "Thích" },
@@ -14,34 +13,21 @@ const EMOJIS = [
 
 interface ReactionPickerProps {
   onSelect: (emoji: string) => void;
-  className?: string;
 }
 
-export default function ReactionPicker({
-  onSelect,
-  className,
-}: ReactionPickerProps) {
+export default function ReactionPicker({ onSelect }: ReactionPickerProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 p-2 bg-background/95 border border-border/60 rounded-2xl shadow-xl backdrop-blur-md",
-        className
-      )}
-    >
+    <div className="flex items-center gap-1">
       {EMOJIS.map((item) => (
         <Button
           key={item.emoji}
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           onClick={() => onSelect(item.emoji)}
-          className={cn(
-            "h-9 w-9 rounded-xl hover:bg-muted/80 hover:scale-110 transition-all duration-200",
-            "active:scale-95 shadow-sm"
-          )}
-          type="button"
+          className="h-8 w-8 hover:bg-muted"
           title={item.label}
         >
-          <span className="text-xl leading-none">{item.emoji}</span>
+          <span className="text-lg">{item.emoji}</span>
         </Button>
       ))}
     </div>

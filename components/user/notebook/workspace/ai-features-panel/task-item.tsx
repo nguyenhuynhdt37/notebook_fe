@@ -9,11 +9,9 @@ import {
   Eye,
   Trash2,
   ListChecks,
-  FileText,
   Lightbulb,
   Mic,
   Video,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,28 +22,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AiTaskResponse, AiTaskType, AiTaskStatus } from "@/types/user/ai-task";
+import { AiSetResponse, AiSetType, AiSetStatus } from "@/types/user/ai-task";
 
-interface TaskItemProps {
-  task: AiTaskResponse;
-  onView?: (taskId: string) => void;
-  onDelete?: (taskId: string) => void;
+interface SetItemProps {
+  set: AiSetResponse;
+  onView?: (setId: string) => void;
+  onDelete?: (setId: string) => void;
 }
 
-const TASK_TYPE_CONFIG: Record<
-  AiTaskType,
+const SET_TYPE_CONFIG: Record<
+  AiSetType,
   { icon: React.ElementType; label: string }
 > = {
   quiz: { icon: ListChecks, label: "Quiz" },
-  summary: { icon: FileText, label: "Summary" },
-  flashcards: { icon: Lightbulb, label: "Flashcards" },
+  flashcard: { icon: Lightbulb, label: "Flashcards" },
   tts: { icon: Mic, label: "Audio" },
   video: { icon: Video, label: "Video" },
-  other: { icon: Sparkles, label: "Khác" },
 };
 
 const STATUS_CONFIG: Record<
-  AiTaskStatus,
+  AiSetStatus,
   {
     icon: React.ElementType;
     label: string;
@@ -81,26 +77,28 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-export default function TaskItem({ task, onView, onDelete }: TaskItemProps) {
-  const typeConfig = TASK_TYPE_CONFIG[task.taskType];
-  const statusConfig = STATUS_CONFIG[task.status];
+export default function SetItem({ set, onView, onDelete }: SetItemProps) {
+  const typeConfig = SET_TYPE_CONFIG[set.setType] || SET_TYPE_CONFIG.quiz;
+  const statusConfig = STATUS_CONFIG[set.status] || STATUS_CONFIG.queued;
   const TypeIcon = typeConfig.icon;
   const StatusIcon = statusConfig.icon;
 
-  const isProcessing = task.status === "queued" || task.status === "processing";
+  const isProcessing = set.status === "queued" || set.status === "processing";
 
   return (
-    <div className="group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/40 transition-colors">
-      <div className="shrink-0 p-1.5 rounded-md bg-muted/50">
+    <div className="group flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/40 transition-colors">
+      <div className="shrink-0 p-1.5 rounded-md bg-muted/50 mt-0.5">
         <TypeIcon className="size-4" />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">{typeConfig.label}</p>
+          <p className="text-sm font-medium truncate">
+            {set.title || typeConfig.label}
+          </p>
           <Badge
             variant={statusConfig.variant}
-            className="text-xs px-2 py-0.5 h-5 font-medium gap-1"
+            className="text-xs px-2 py-0.5 h-5 font-medium gap-1 shrink-0"
           >
             <StatusIcon
               className={`size-3 ${isProcessing ? "animate-spin" : ""}`}
@@ -109,32 +107,32 @@ export default function TaskItem({ task, onView, onDelete }: TaskItemProps) {
           </Badge>
         </div>
 
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
           <Avatar className="size-4">
-            <AvatarImage src={task.userAvatar} alt={task.userFullName} />
+            <AvatarImage src={set.userAvatar} alt={set.userFullName} />
             <AvatarFallback className="text-[8px]">
-              {getInitials(task.userFullName)}
+              {getInitials(set.userFullName)}
             </AvatarFallback>
           </Avatar>
           <span className="text-xs text-muted-foreground truncate">
-            {task.userFullName}
-            {task.isOwner && (
+            {set.userFullName}
+            {set.owner && (
               <span className="text-foreground/70 font-medium"> (bạn)</span>
             )}
           </span>
           <span className="text-xs text-muted-foreground">•</span>
           <span className="text-xs text-muted-foreground">
-            {task.fileCount} files
+            {set.fileCount} files
           </span>
           <span className="text-xs text-muted-foreground">•</span>
           <span className="text-xs text-muted-foreground">
-            {formatTimeAgo(task.createdAt)}
+            {formatTimeAgo(set.createdAt)}
           </span>
         </div>
 
-        {task.status === "failed" && task.errorMessage && (
+        {set.status === "failed" && set.errorMessage && (
           <p className="text-xs text-destructive mt-1 truncate">
-            {task.errorMessage}
+            {set.errorMessage}
           </p>
         )}
       </div>
@@ -150,18 +148,18 @@ export default function TaskItem({ task, onView, onDelete }: TaskItemProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
-          {task.status === "done" && (
+          {set.status === "done" && (
             <DropdownMenuItem
-              onClick={() => onView?.(task.id)}
+              onClick={() => onView?.(set.id)}
               className="gap-2"
             >
               <Eye className="size-4" />
               <span className="text-sm">Xem kết quả</span>
             </DropdownMenuItem>
           )}
-          {task.isOwner && (
+          {set.owner && (
             <DropdownMenuItem
-              onClick={() => onDelete?.(task.id)}
+              onClick={() => onDelete?.(set.id)}
               variant="destructive"
               className="gap-2"
             >
