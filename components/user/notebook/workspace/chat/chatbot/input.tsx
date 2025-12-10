@@ -45,9 +45,9 @@ export default function ChatInput({
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<
-    "auto" | "document" | "web" | "both" | "model"
-  >("auto");
+  const [mode, setMode] = useState<"document" | "web" | "both" | "model">(
+    "document"
+  );
   const [models, setModels] = useState<LlmModel[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string | undefined>();
   const [images, setImages] = useState<File[]>([]);
@@ -58,8 +58,8 @@ export default function ChatInput({
   const lastNotebookIdRef = useRef<string | null>(null);
 
   // Derive askDocument and searchWeb from mode
-  const askDocument = mode === "document" || mode === "both" || mode === "auto";
-  const searchWeb = mode === "web" || mode === "both" || mode === "auto";
+  const askDocument = mode === "document" || mode === "both";
+  const searchWeb = mode === "web" || mode === "both";
 
   // Load models
   useEffect(() => {
@@ -166,7 +166,7 @@ export default function ChatInput({
   };
 
   // Map UI mode to API mode
-  const mapModeToApi = (): "RAG" | "WEB" | "HYBRID" | "LLM_ONLY" | "AUTO" => {
+  const mapModeToApi = (): "RAG" | "WEB" | "HYBRID" | "LLM_ONLY" => {
     switch (mode) {
       case "document":
         return "RAG";
@@ -176,9 +176,8 @@ export default function ChatInput({
         return "HYBRID";
       case "model":
         return "LLM_ONLY";
-      case "auto":
       default:
-        return "AUTO";
+        return "RAG";
     }
   };
 
@@ -438,9 +437,6 @@ export default function ChatInput({
           >
             <SelectTrigger className="h-8 text-xs border-border/50 bg-background/80 hover:bg-background min-w-[140px] shadow-sm transition-colors">
               <div className="flex items-center gap-1.5">
-                {mode === "auto" && (
-                  <Sparkles className="size-3.5 text-muted-foreground" />
-                )}
                 {mode === "document" && (
                   <BookOpen className="size-3.5 text-muted-foreground" />
                 )}
@@ -457,7 +453,6 @@ export default function ChatInput({
                   <Sparkles className="size-3.5 text-muted-foreground" />
                 )}
                 <SelectValue>
-                  {mode === "auto" && "AUTO"}
                   {mode === "document" && "HỎI TÀI LIỆU"}
                   {mode === "web" && "TÌM KIẾM WEB"}
                   {mode === "both" && "KẾT HỢP"}
@@ -466,12 +461,6 @@ export default function ChatInput({
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="auto" className="text-xs">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-3.5" />
-                  AUTO (Mặc định)
-                </div>
-              </SelectItem>
               <SelectItem value="document" className="text-xs">
                 <div className="flex items-center gap-2">
                   <BookOpen className="size-3.5" />
@@ -647,8 +636,6 @@ export default function ChatInput({
                       : "Nhập câu hỏi..."
                     : images.length > 0
                     ? "Nhập câu hỏi về ảnh/tài liệu..."
-                    : mode === "auto"
-                    ? "Hỏi về tài liệu hoặc tìm kiếm trên web..."
                     : mode === "document"
                     ? "Hỏi về tài liệu..."
                     : mode === "web"
