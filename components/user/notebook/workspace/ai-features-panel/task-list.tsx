@@ -2,26 +2,26 @@
 
 import { Loader2, AlertCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AiTaskResponse } from "@/types/user/ai-task";
-import TaskItem from "./task-item";
+import { AiSetResponse } from "@/types/user/ai-task";
+import SetItem from "./task-item";
 
-interface TaskListProps {
-  tasks: AiTaskResponse[];
+interface SetListProps {
+  sets: AiSetResponse[];
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
-  onView?: (taskId: string) => void;
-  onDelete?: (taskId: string) => void;
+  onView?: (setId: string) => void;
+  onDelete?: (setId: string) => void;
 }
 
-export default function TaskList({
-  tasks,
+export default function SetList({
+  sets,
   loading,
   error,
   onRetry,
   onView,
   onDelete,
-}: TaskListProps) {
+}: SetListProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
@@ -45,7 +45,7 @@ export default function TaskList({
     );
   }
 
-  if (tasks.length === 0) {
+  if (sets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
         <div className="inline-flex p-3 rounded-full bg-muted/50 mb-3">
@@ -62,13 +62,8 @@ export default function TaskList({
 
   return (
     <div className="space-y-1">
-      {tasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          onView={onView}
-          onDelete={onDelete}
-        />
+      {sets.map((set) => (
+        <SetItem key={set.id} set={set} onView={onView} onDelete={onDelete} />
       ))}
     </div>
   );

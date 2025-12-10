@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Send, X, Reply } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ export default function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -31,18 +33,19 @@ export default function ChatInput({
     }
   }, [content]);
 
+  // Cleanup typing timeout
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
+
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
-
     onTyping(true);
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      onTyping(false);
-    }, 3000);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => onTyping(false), 3000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -59,82 +62,50 @@ export default function ChatInput({
     setContent("");
     onTyping(false);
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
 
-  useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-
   return (
-    <div className="border-t border-border/60 bg-gradient-to-t from-background via-background to-muted/10 p-4 space-y-3 shrink-0 shadow-[0_-2px_12px_rgba(0,0,0,0.04)]">
+    <div className="border-t p-4 space-y-3">
+      {/* Reply preview */}
       {replyToMessage && (
-        <div className="flex items-start gap-3 p-3.5 bg-gradient-to-br from-muted/60 to-muted/40 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm">
-          <div className="p-1.5 rounded-lg bg-primary/10 shrink-0 border border-primary/20">
-            <Reply className="size-3.5 text-primary" />
-          </div>
+        <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+          <Reply className="size-4 text-muted-foreground mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold text-foreground">
-                Trả lời {replyToMessage.userName}
-              </span>
-            </div>
-            <div className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-xs font-medium">
+              Trả lời {replyToMessage.userName}
+            </p>
+            <p className="text-xs text-muted-foreground line-clamp-2">
               {replyToMessage.content}
-            </div>
+            </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onCancelReply}
-            className="shrink-0 h-7 w-7 hover:bg-muted"
-          >
-            <X className="size-3.5" />
+          <Button variant="ghost" size="icon" onClick={onCancelReply}>
+            <X className="size-4" />
           </Button>
         </div>
       )}
 
+      {/* Input area */}
       <div className="flex items-end gap-3">
-        <div className="flex-1 relative">
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            placeholder="Nhập tin nhắn..."
-            disabled={disabled}
-            rows={1}
-            className={cn(
-              "flex-1 w-full min-h-[48px] max-h-[120px] resize-none rounded-xl border border-border/60 bg-background/90 backdrop-blur-sm px-4 py-3 pr-12 text-sm",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:border-ring/60 focus-visible:shadow-sm",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              "placeholder:text-muted-foreground/60 transition-all"
-            )}
-          />
-          <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground/60">
-            Enter để gửi
-          </div>
-        </div>
+        <Textarea
+          ref={textareaRef}
+          value={content}
+          onChange={handleInput}
+          onKeyDown={handleKeyDown}
+          placeholder="Nhập tin nhắn..."
+          disabled={disabled}
+          rows={1}
+          className={cn(
+            "flex-1 min-h-[44px] max-h-[120px] resize-none",
+            "focus-visible:ring-1"
+          )}
+        />
         <Button
           onClick={handleSend}
           disabled={!content.trim() || disabled}
           size="icon"
-          className={cn(
-            "shrink-0 size-11 rounded-xl shadow-sm transition-all duration-200",
-            !content.trim() || disabled
-              ? "opacity-50"
-              : "hover:shadow-lg hover:scale-105 active:scale-95"
-          )}
+          className="shrink-0"
         >
           <Send className="size-4" />
         </Button>
