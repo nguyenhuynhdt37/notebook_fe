@@ -50,6 +50,14 @@ export default function GeneratedContent({
     if (set.setType === "quiz" && set.status === "done") {
       setSelectedSetId(setId);
       setQuizModalOpen(true);
+    } else if (set.setType === "tts" && set.status === "done") {
+      // Mở audio URL trong tab mới nếu có
+      const audioUrl = set.outputStats?.audioUrl;
+      if (audioUrl) {
+        window.open(audioUrl, "_blank");
+      } else {
+        toast.error("Không tìm thấy audio URL");
+      }
     } else {
       // TODO: Handle other types
       console.log("View set:", setId, set.setType);

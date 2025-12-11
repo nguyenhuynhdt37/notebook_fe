@@ -6,6 +6,7 @@ import StudioHeader from "./studio-header";
 import FeatureList from "./feature-list";
 import GeneratedContent from "./generated-content";
 import QuizGenerateModal from "./quiz-generate-modal";
+import AudioOverviewModal from "./audio-overview-modal";
 
 interface AIFeaturesPanelProps {
   notebookId: string;
@@ -17,10 +18,14 @@ export default function AIFeaturesPanel({
   selectedFileIds = [],
 }: AIFeaturesPanelProps) {
   const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleFeatureClick = useCallback((featureId: string) => {
     switch (featureId) {
+      case "audio-overview":
+        setAudioModalOpen(true);
+        break;
       case "quiz":
         setQuizModalOpen(true);
         break;
@@ -55,6 +60,17 @@ export default function AIFeaturesPanel({
         selectedFileIds={selectedFileIds}
         onSuccess={handleQuizSuccess}
       />
+
+      {/* Audio Overview Modal */}
+      {audioModalOpen && (
+        <AudioOverviewModal
+          open={audioModalOpen}
+          onOpenChange={setAudioModalOpen}
+          notebookId={notebookId}
+          selectedFileIds={selectedFileIds}
+          onSuccess={handleQuizSuccess}
+        />
+      )}
     </div>
   );
 }
