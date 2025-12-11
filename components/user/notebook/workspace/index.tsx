@@ -3,11 +3,8 @@
 import { useState } from "react";
 import {
   Menu,
-  X,
   PanelLeftClose,
   PanelRightClose,
-  Maximize2,
-  Minimize2,
   MessageSquare,
   Bot,
 } from "lucide-react";
@@ -22,7 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 
 interface NotebookWorkspaceProps {
   notebookId: string;
@@ -36,9 +32,6 @@ export default function NotebookWorkspace({
   const [showSources, setShowSources] = useState(true);
   const [showAIFeatures, setShowAIFeatures] = useState(true);
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
-  const [expandedSources, setExpandedSources] = useState(false);
-  const [expandedChat, setExpandedChat] = useState(false);
-  const [expandedAIFeatures, setExpandedAIFeatures] = useState(false);
   const [chatMode, setChatMode] = useState<"chatbot" | "group">("chatbot");
 
   return (
@@ -127,54 +120,10 @@ export default function NotebookWorkspace({
         </div>
       </WorkspaceHeader>
 
-      <div className="flex-1 overflow-hidden flex bg-gradient-to-br from-muted/5 via-background to-muted/5">
+      <div className="flex-1 overflow-hidden flex">
         {/* Sources Panel - Left */}
         {showSources && (
-          <div
-            className={cn(
-              "min-w-0 overflow-hidden transition-all duration-300 border-r border-border/50 bg-background/80 backdrop-blur-sm shadow-[2px_0_12px_rgba(0,0,0,0.03)] relative",
-              expandedSources
-                ? "flex-[3]"
-                : expandedChat || expandedAIFeatures
-                ? "flex-[0.5]"
-                : "flex-[1]"
-            )}
-          >
-            <div className="absolute top-2 right-2 z-10">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 bg-background/90 hover:bg-background border border-border/50 shadow-sm"
-                      onClick={() => {
-                        if (expandedSources) {
-                          // Thu nhỏ: reset tất cả về mặc định
-                          setExpandedSources(false);
-                          setExpandedChat(false);
-                          setExpandedAIFeatures(false);
-                        } else {
-                          // Phóng to: chỉ phóng to sources, thu nhỏ các panel khác
-                          setExpandedSources(true);
-                          setExpandedChat(false);
-                          setExpandedAIFeatures(false);
-                        }
-                      }}
-                    >
-                      {expandedSources ? (
-                        <Minimize2 className="size-3.5" />
-                      ) : (
-                        <Maximize2 className="size-3.5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{expandedSources ? "Thu nhỏ" : "Phóng to"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+          <div className="flex-1 min-w-0 overflow-hidden border-r border-border/50">
             <SourcesPanel
               notebookId={notebookId}
               onSelectionChange={setSelectedFileIds}
@@ -183,52 +132,8 @@ export default function NotebookWorkspace({
         )}
 
         {/* Chat Panel - Center */}
-        <div
-          className={cn(
-            "min-w-0 overflow-hidden bg-background shadow-[inset_0_0_30px_rgba(0,0,0,0.02)] relative",
-            expandedChat
-              ? "flex-[3]"
-              : expandedSources || expandedAIFeatures
-              ? "flex-[1]"
-              : "flex-[2]"
-          )}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-muted/3 pointer-events-none" />
-          <div className="absolute top-2 right-2 z-20 pointer-events-auto">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7 bg-background/90 hover:bg-background border border-border/50 shadow-sm"
-                    onClick={() => {
-                      if (expandedChat) {
-                        // Thu nhỏ: reset tất cả về mặc định
-                        setExpandedChat(false);
-                        setExpandedSources(false);
-                        setExpandedAIFeatures(false);
-                      } else {
-                        // Phóng to: chỉ phóng to chat, thu nhỏ các panel khác
-                        setExpandedChat(true);
-                        setExpandedSources(false);
-                        setExpandedAIFeatures(false);
-                      }
-                    }}
-                  >
-                    {expandedChat ? (
-                      <Minimize2 className="size-3.5" />
-                    ) : (
-                      <Maximize2 className="size-3.5" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{expandedChat ? "Thu nhỏ" : "Phóng to"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+        <div className="flex-[2] min-w-0 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" />
           <Chat
             notebookId={notebookId}
             accessToken={accessToken}
@@ -239,51 +144,7 @@ export default function NotebookWorkspace({
 
         {/* AI Features Panel - Right */}
         {showAIFeatures && (
-          <div
-            className={cn(
-              "min-w-0 overflow-hidden transition-all duration-300 border-l border-border/50 bg-background/80 backdrop-blur-sm shadow-[-2px_0_12px_rgba(0,0,0,0.03)] relative",
-              expandedAIFeatures
-                ? "flex-[3]"
-                : expandedChat || expandedSources
-                ? "flex-[0.5]"
-                : "flex-[1]"
-            )}
-          >
-            <div className="absolute top-2 right-2 z-10">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 bg-background/90 hover:bg-background border border-border/50 shadow-sm"
-                      onClick={() => {
-                        if (expandedAIFeatures) {
-                          // Thu nhỏ: reset tất cả về mặc định
-                          setExpandedAIFeatures(false);
-                          setExpandedSources(false);
-                          setExpandedChat(false);
-                        } else {
-                          // Phóng to: chỉ phóng to AI features, thu nhỏ các panel khác
-                          setExpandedAIFeatures(true);
-                          setExpandedSources(false);
-                          setExpandedChat(false);
-                        }
-                      }}
-                    >
-                      {expandedAIFeatures ? (
-                        <Minimize2 className="size-3.5" />
-                      ) : (
-                        <Maximize2 className="size-3.5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{expandedAIFeatures ? "Thu nhỏ" : "Phóng to"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+          <div className="flex-1 min-w-0 overflow-hidden border-l border-border/50">
             <AIFeaturesPanel
               notebookId={notebookId}
               selectedFileIds={selectedFileIds}

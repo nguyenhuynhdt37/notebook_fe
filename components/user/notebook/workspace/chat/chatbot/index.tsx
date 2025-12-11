@@ -100,7 +100,7 @@ export default function Chatbot({
   return (
     <div className="flex flex-col h-full bg-background relative">
       {/* Header */}
-      <div className="border-b border-border/50 bg-gradient-to-br from-background via-muted/30 to-background px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 shadow-sm backdrop-blur-sm relative z-10">
+      <div className="border-b border-border/50 px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 relative z-10">
         <div className="flex items-center gap-3.5">
           <div>
             <h3 className="font-semibold text-base text-foreground leading-tight tracking-tight">

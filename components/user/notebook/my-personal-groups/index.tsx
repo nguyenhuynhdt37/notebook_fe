@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Plus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
-import { AvailableGroupsResponse } from "@/types/user/community";
-import CommunityFilter from "./community-filter";
-import CommunityCardList from "./community-card-list";
-import CommunityPagination from "./community-pagination";
+import { PersonalNotebooksResponse } from "@/types/user/notebook";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,9 +14,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import NotebookFilter from "./notebook-filter";
+import NotebookCardList from "./notebook-card-list";
+import NotebookPagination from "./notebook-pagination";
 
-export default function Notebooks() {
-  const [data, setData] = useState<AvailableGroupsResponse | null>(null);
+export default function MyPersonalGroups() {
+  const [data, setData] = useState<PersonalNotebooksResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [size] = useState(10);
@@ -25,10 +28,10 @@ export default function Notebooks() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
-    loadGroups();
+    loadNotebooks();
   }, [page, q, sortBy, sortDir]);
 
-  const loadGroups = async () => {
+  const loadNotebooks = async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -39,14 +42,13 @@ export default function Notebooks() {
         ...(q && { q }),
       });
 
-      const response = await api.get<AvailableGroupsResponse>(
-        `/user/community/available?${params}`
+      const response = await api.get<PersonalNotebooksResponse>(
+        `/user/personal-notebooks?${params}`
       );
-
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching groups:", error);
-      toast.error("Không thể tải danh sách nhóm cộng đồng");
+      console.error("Error fetching notebooks:", error);
+      toast.error("Không thể tải danh sách notebook cá nhân");
     } finally {
       setIsLoading(false);
     }
@@ -76,15 +78,30 @@ export default function Notebooks() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Notebook cá nhân</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quản lý các notebook riêng tư của bạn
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/notebook/create">
+            <Plus className="size-4 mr-2" />
+            Tạo mới
+          </Link>
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Tìm kiếm và lọc</CardTitle>
           <CardDescription className="mt-1">
-            Tìm kiếm nhóm cộng đồng theo tiêu đề hoặc mô tả
+            Tìm kiếm notebook theo tiêu đề hoặc mô tả
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CommunityFilter
+          <NotebookFilter
             q={q}
             sortBy={sortBy}
             sortDir={sortDir}
@@ -115,18 +132,30 @@ export default function Notebooks() {
       ) : !data || data.items.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
+            <FolderOpen className="size-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground mb-4">
               {q
-                ? "Không tìm thấy nhóm nào phù hợp"
-                : "Chưa có nhóm cộng đồng nào"}
+                ? "Không tìm thấy notebook nào phù hợp"
+                : "Bạn chưa có notebook cá nhân nào"}
             </p>
+            {!q && (
+              <Button asChild>
+                <Link href="/notebook/create">
+                  <Plus className="size-4 mr-2" />
+                  Tạo Notebook đầu tiên
+                </Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <>
-          <CommunityCardList groups={data.items} />
+          <NotebookCardList
+            notebooks={data.items}
+            onNotebookDeleted={loadNotebooks}
+          />
           {data.meta.totalPages > 1 && (
-            <CommunityPagination
+            <NotebookPagination
               meta={data.meta}
               page={page}
               onPageChange={handlePageChange}

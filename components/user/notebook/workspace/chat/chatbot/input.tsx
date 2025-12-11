@@ -426,7 +426,7 @@ export default function ChatInput({
   );
 
   return (
-    <div className="border-t border-border/50 bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+    <div className="border-t border-border/50 shrink-0">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         {/* Options */}
         <div className="mb-3 flex items-center gap-2.5 flex-wrap">
@@ -435,7 +435,7 @@ export default function ChatInput({
             onValueChange={(value) => setMode(value as typeof mode)}
             disabled={isLoading}
           >
-            <SelectTrigger className="h-8 text-xs border-border/50 bg-background/80 hover:bg-background min-w-[140px] shadow-sm transition-colors">
+            <SelectTrigger className="h-8 text-xs border-border/50 min-w-[140px] transition-colors">
               <div className="flex items-center gap-1.5">
                 {mode === "document" && (
                   <BookOpen className="size-3.5 text-muted-foreground" />
@@ -492,7 +492,7 @@ export default function ChatInput({
           {selectedFileIds.length > 0 && (
             <Badge
               variant="outline"
-              className="text-xs font-medium gap-1.5 px-3 py-1 h-8 border-primary/30 bg-primary/5 text-primary shadow-sm"
+              className="text-xs font-medium gap-1.5 px-3 py-1 h-8 border-primary/30 bg-primary/5 text-primary"
             >
               <FileText className="size-3.5" />
               {selectedFileIds.length} tài liệu
@@ -504,7 +504,7 @@ export default function ChatInput({
             onValueChange={setSelectedModelId}
             disabled={isLoading || models.length === 0}
           >
-            <SelectTrigger className="h-8 text-xs border-border/50 bg-background/80 hover:bg-background min-w-[110px] shadow-sm transition-colors">
+            <SelectTrigger className="h-8 text-xs border-border/50 min-w-[110px] transition-colors">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="size-3.5 text-muted-foreground" />
                 <SelectValue placeholder="Model...">
@@ -555,10 +555,10 @@ export default function ChatInput({
         {/* Input Container */}
         <div
           className={cn(
-            "relative rounded-2xl border-2 transition-all shadow-lg",
+            "relative rounded-2xl border-2 transition-all",
             isDragging
-              ? "border-primary bg-primary/10 shadow-primary/20"
-              : "border-border/50 bg-background hover:border-primary/30 hover:shadow-xl"
+              ? "border-primary bg-primary/10"
+              : "border-border/50 hover:border-primary/30"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -661,10 +661,10 @@ export default function ChatInput({
               disabled={!canSend()}
               size="icon"
               className={cn(
-                "shrink-0 size-9 rounded-xl transition-all flex items-center justify-center shadow-md",
+                "shrink-0 size-9 rounded-xl transition-all flex items-center justify-center",
                 canSend()
-                  ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-105 hover:shadow-lg"
-                  : "bg-muted text-muted-foreground shadow-sm"
+                  ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-105"
+                  : "bg-muted text-muted-foreground"
               )}
             >
               {isLoading ? (

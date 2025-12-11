@@ -10,7 +10,7 @@ interface EmptyStateProps {
 export default function EmptyState({ selectedFileIds }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto px-6 animate-in fade-in duration-500">
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-muted/30 mb-6 shadow-lg ring-1 ring-primary/10">
+      <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-muted/30 mb-6  ring-1 ring-primary/10">
         <Sparkles className="size-12 text-primary animate-pulse" />
       </div>
       <h3 className="font-semibold text-xl text-foreground mb-3 tracking-tight">
@@ -22,7 +22,7 @@ export default function EmptyState({ selectedFileIds }: EmptyStateProps) {
           : "Hỏi bất kỳ điều gì về tài liệu trong notebook này. AI sẽ trả lời dựa trên nội dung đã được tải lên."}
       </p>
       {selectedFileIds.length > 0 && (
-        <Badge variant="outline" className="text-xs font-semibold gap-1.5 px-4 py-2 border-primary/30 bg-primary/5 text-primary shadow-sm">
+        <Badge variant="outline" className="text-xs font-semibold gap-1.5 px-4 py-2 border-primary/30 bg-primary/5 text-primary ">
           <FileText className="size-3.5" />
           {selectedFileIds.length} {selectedFileIds.length === 1 ? "tài liệu" : "tài liệu"} đã chọn
         </Badge>

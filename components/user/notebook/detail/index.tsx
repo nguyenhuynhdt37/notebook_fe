@@ -134,7 +134,7 @@ export default function NotebookDetail({ notebookId }: NotebookDetailProps) {
             </CardHeader>
             <CardContent className="space-y-6">
               {notebook.thumbnailUrl && (
-                <div className="w-full h-64 rounded-lg border overflow-hidden bg-muted">
+                <div className="w-full aspect-video rounded-lg border overflow-hidden bg-muted">
                   <img
                     src={notebook.thumbnailUrl}
                     alt={notebook.title}
