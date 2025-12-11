@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import MarkdownRenderer from "@/components/shared/markdown-renderer";
 
 interface NotebookDetailProps {
   notebookId: string;
@@ -136,7 +137,7 @@ export default function NotebookDetail({ notebookId }: NotebookDetailProps) {
         <CardContent>
           <div className="space-y-6">
             {notebook.thumbnailUrl && (
-              <div className="w-full h-64 rounded-lg border overflow-hidden bg-muted">
+              <div className="w-full aspect-video rounded-lg border overflow-hidden bg-muted">
                 <img
                   src={notebook.thumbnailUrl}
                   alt={notebook.title}
@@ -145,11 +146,13 @@ export default function NotebookDetail({ notebookId }: NotebookDetailProps) {
               </div>
             )}
             <div>
-              <h2 className="text-2xl font-bold tracking-tight mb-2">
+              <h2 className="text-2xl font-bold tracking-tight mb-3">
                 {notebook.title}
               </h2>
               {notebook.description && (
-                <p className="text-muted-foreground">{notebook.description}</p>
+                <div className="prose prose-sm max-w-none">
+                  <MarkdownRenderer content={notebook.description} />
+                </div>
               )}
             </div>
 

@@ -255,7 +255,8 @@ export default function MessageList({
     };
   }, []);
 
-  if (messages.length === 0 && !isLoadingHistory && !selectedConversationId) {
+  // Show empty state khi: chưa chọn conversation HOẶC đã chọn nhưng không có message
+  if (messages.length === 0 && !isLoadingHistory) {
     return <EmptyState selectedFileIds={selectedFileIds} />;
   }
 

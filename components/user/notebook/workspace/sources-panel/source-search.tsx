@@ -30,7 +30,7 @@ export default function SourceSearch({
   const isAllSelected = totalCount > 0 && selectedCount === totalCount;
 
   return (
-    <div className="flex items-center justify-between mb-3">
+    <div className="flex items-center justify-between">
       <div className="flex items-center gap-2.5">
         <h2 className="font-semibold text-base text-foreground">Nguồn</h2>
         <TooltipProvider>
@@ -52,7 +52,10 @@ export default function SourceSearch({
           </Tooltip>
         </TooltipProvider>
         {totalCount > 0 && (
-          <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 font-medium">
+          <Badge
+            variant="outline"
+            className="text-xs px-2 py-0.5 h-5 font-medium"
+          >
             {selectedCount}/{totalCount}
           </Badge>
         )}
@@ -70,16 +73,6 @@ export default function SourceSearch({
         )}
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onAdd}
-                className="size-7 hover:bg-muted/60"
-              >
-                <Plus className="size-4" />
-              </Button>
-            </TooltipTrigger>
             <TooltipContent>
               <p className="text-sm">Thêm nguồn</p>
             </TooltipContent>

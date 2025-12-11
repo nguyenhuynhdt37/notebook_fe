@@ -50,7 +50,7 @@ export default function WorkspaceHeader({
   };
 
   return (
-    <div className="border-b border-border/60 bg-gradient-to-br from-background via-background to-muted/10 backdrop-blur-sm shadow-[0_2px_12px_rgba(0,0,0,0.04)] px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4 shrink-0">
+    <div className="border-b border-border/60 px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4 shrink-0">
       <Button
         variant="ghost"
         size="icon"

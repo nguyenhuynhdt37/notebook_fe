@@ -148,7 +148,7 @@ export default function SourceItem({
       <div
         className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
           selected
-            ? "bg-muted/60 border border-border/60 shadow-sm"
+            ? "bg-muted/60 border border-border/60"
             : "hover:bg-muted/40 border border-transparent"
         } ${canSelect ? "cursor-pointer" : ""}`}
         onClick={handleItemClick}
@@ -182,7 +182,9 @@ export default function SourceItem({
             {source.uploadedBy && (
               <span className="text-xs text-muted-foreground truncate">
                 {source.uploadedBy.fullName}
-                {isMyFile && <span className="text-foreground/70 font-medium"> (bạn)</span>}
+                {isMyFile && (
+                  <span className="text-foreground/70 font-medium"> (bạn)</span>
+                )}
               </span>
             )}
           </div>

@@ -60,12 +60,12 @@ const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
         <div
           ref={ref}
           className={cn(
-            "absolute left-0 top-0 bottom-0 w-80 bg-background/95 backdrop-blur-md border-r border-border/60 shadow-2xl z-50 transition-transform duration-300 ease-out flex flex-col",
+            "absolute left-0 top-0 bottom-0 w-80 bg-background border-r border-border/60 z-50 transition-transform duration-300 ease-out flex flex-col",
             isOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-border/50 shrink-0 bg-gradient-to-r from-muted/30 to-transparent">
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-border/50 shrink-0">
             <div className="flex items-center gap-2.5">
               <History className="size-4.5 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">

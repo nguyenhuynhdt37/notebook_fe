@@ -82,14 +82,7 @@ export default function MyGroups() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Nhóm của tôi</h1>
-        <p className="text-muted-foreground mt-1.5">
-          Quản lý các nhóm cộng đồng bạn đã tham gia
-        </p>
-      </div>
-
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Tìm kiếm và lọc</CardTitle>
@@ -153,4 +146,3 @@ export default function MyGroups() {
     </div>
   );
 }
-
