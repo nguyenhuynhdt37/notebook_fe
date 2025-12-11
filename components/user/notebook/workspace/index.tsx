@@ -8,6 +8,8 @@ import {
   PanelRightClose,
   Maximize2,
   Minimize2,
+  MessageSquare,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Chat from "@/components/user/notebook/workspace/chat";
@@ -37,10 +39,46 @@ export default function NotebookWorkspace({
   const [expandedSources, setExpandedSources] = useState(false);
   const [expandedChat, setExpandedChat] = useState(false);
   const [expandedAIFeatures, setExpandedAIFeatures] = useState(false);
+  const [chatMode, setChatMode] = useState<"chatbot" | "group">("chatbot");
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <WorkspaceHeader>
+      <WorkspaceHeader
+        leftContent={
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setChatMode(chatMode === "chatbot" ? "group" : "chatbot")
+                  }
+                  className="gap-2 text-sm ml-4"
+                >
+                  {chatMode === "chatbot" ? (
+                    <>
+                      <Bot className="size-4" />
+                      <span className="hidden sm:inline">Chatbot</span>
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="size-4" />
+                      <span className="hidden sm:inline">Chat hội đồng</span>
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  Chuyển sang{" "}
+                  {chatMode === "chatbot" ? "Chat hội đồng" : "Chatbot"}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        }
+      >
         <div className="flex items-center gap-2">
           <TooltipProvider>
             <Tooltip>
@@ -195,6 +233,7 @@ export default function NotebookWorkspace({
             notebookId={notebookId}
             accessToken={accessToken}
             selectedFileIds={selectedFileIds}
+            chatMode={chatMode}
           />
         </div>
 
