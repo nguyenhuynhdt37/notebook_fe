@@ -6,6 +6,7 @@ import StudioHeader from "./studio-header";
 import FeatureList from "./feature-list";
 import GeneratedContent from "./generated-content";
 import QuizGenerateModal from "./quiz-generate-modal";
+import FlashcardGenerateModal from "./flashcard-generate-modal";
 
 interface AIFeaturesPanelProps {
   notebookId: string;
@@ -17,6 +18,7 @@ export default function AIFeaturesPanel({
   selectedFileIds = [],
 }: AIFeaturesPanelProps) {
   const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [flashcardModalOpen, setFlashcardModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleFeatureClick = useCallback((featureId: string) => {
@@ -24,13 +26,15 @@ export default function AIFeaturesPanel({
       case "quiz":
         setQuizModalOpen(true);
         break;
-      // TODO: Add other feature modals
+      case "flashcards":
+        setFlashcardModalOpen(true);
+        break;
       default:
         console.log(`Feature clicked: ${featureId}`);
     }
   }, []);
 
-  const handleQuizSuccess = useCallback(() => {
+  const handleGenerateSuccess = useCallback(() => {
     // Refresh generated content list
     setRefreshKey((prev) => prev + 1);
   }, []);
@@ -53,7 +57,16 @@ export default function AIFeaturesPanel({
         onOpenChange={setQuizModalOpen}
         notebookId={notebookId}
         selectedFileIds={selectedFileIds}
-        onSuccess={handleQuizSuccess}
+        onSuccess={handleGenerateSuccess}
+      />
+
+      {/* Flashcard Generate Modal */}
+      <FlashcardGenerateModal
+        open={flashcardModalOpen}
+        onOpenChange={setFlashcardModalOpen}
+        notebookId={notebookId}
+        selectedFileIds={selectedFileIds}
+        onSuccess={handleGenerateSuccess}
       />
     </div>
   );
