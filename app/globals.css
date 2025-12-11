@@ -117,3 +117,39 @@
     @apply bg-background text-foreground;
   }
 }
+/* Custom animations for flashcards */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hint-reveal {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* 3D Transform utilities for Tailwind v4 */
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+
+@utility preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@utility backface-hidden {
+  backface-visibility: hidden;
+}
+
+@utility rotate-y-0 {
+  transform: rotateY(0deg);
+}
+
+@utility rotate-y-180 {
+  transform: rotateY(180deg);
+}

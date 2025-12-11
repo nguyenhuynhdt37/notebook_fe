@@ -6,6 +6,7 @@ import api from "@/api/client/axios";
 import { AiSetResponse } from "@/types/user/ai-task";
 import SetList from "./task-list";
 import QuizPlayerModal from "./quiz-player-modal";
+import FlashcardViewerModal from "./flashcard-viewer-modal";
 
 interface GeneratedContentProps {
   notebookId: string;
@@ -19,6 +20,7 @@ export default function GeneratedContent({
   const [error, setError] = useState<string | null>(null);
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
+  const [flashcardModalOpen, setFlashcardModalOpen] = useState(false);
 
   const fetchSets = useCallback(async () => {
     if (!notebookId) return;
@@ -50,6 +52,9 @@ export default function GeneratedContent({
     if (set.setType === "quiz" && set.status === "done") {
       setSelectedSetId(setId);
       setQuizModalOpen(true);
+    } else if (set.setType === "flashcard" && set.status === "done") {
+      setSelectedSetId(setId);
+      setFlashcardModalOpen(true);
     } else {
       // TODO: Handle other types
       console.log("View set:", setId, set.setType);
@@ -94,6 +99,16 @@ export default function GeneratedContent({
         <QuizPlayerModal
           open={quizModalOpen}
           onOpenChange={setQuizModalOpen}
+          notebookId={notebookId}
+          aiSetId={selectedSetId}
+        />
+      )}
+
+      {/* Flashcard Viewer Modal */}
+      {selectedSetId && (
+        <FlashcardViewerModal
+          open={flashcardModalOpen}
+          onOpenChange={setFlashcardModalOpen}
           notebookId={notebookId}
           aiSetId={selectedSetId}
         />
