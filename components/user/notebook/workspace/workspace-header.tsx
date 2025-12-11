@@ -26,9 +26,13 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface WorkspaceHeaderProps {
   children?: React.ReactNode;
+  leftContent?: React.ReactNode;
 }
 
-export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
+export default function WorkspaceHeader({
+  children,
+  leftContent,
+}: WorkspaceHeaderProps) {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
 
@@ -83,6 +87,8 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
           </span>
         </div>
       </Link>
+
+      {leftContent}
 
       <div className="flex-1" />
 
@@ -197,10 +203,7 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar className="h-10 w-10">
                       {user.avatarUrl && (
-                        <AvatarImage
-                          src={user.avatarUrl}
-                          alt={user.fullName}
-                        />
+                        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                       )}
                       <AvatarFallback className="bg-foreground text-background">
                         {getInitials(user.fullName)}
@@ -240,4 +243,3 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
     </div>
   );
 }
-
