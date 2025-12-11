@@ -19,6 +19,12 @@ export interface AiSetResponse {
   updatedAt: string;
   fileCount: number;
   owner: boolean;
+  outputStats?: {
+    audioUrl?: string;
+    voiceName?: string;
+    quizIds?: string[];
+    quizCount?: number;
+  };
 }
 
 export interface GenerateQuizResponse {

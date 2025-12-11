@@ -36,7 +36,7 @@ const SET_TYPE_CONFIG: Record<
 > = {
   quiz: { icon: ListChecks, label: "Quiz" },
   flashcard: { icon: Lightbulb, label: "Flashcards" },
-  tts: { icon: Mic, label: "Audio" },
+  tts: { icon: Mic, label: "Audio Overview" },
   video: { icon: Video, label: "Video" },
 };
 
