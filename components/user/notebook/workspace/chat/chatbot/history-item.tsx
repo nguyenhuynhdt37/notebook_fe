@@ -85,7 +85,7 @@ export default function HistoryItem({
         className={cn(
           "px-3.5 py-3 rounded-xl cursor-pointer transition-all group relative",
           isSelected
-            ? "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 shadow-sm"
+            ? "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 "
             : "bg-transparent hover:bg-muted/40 border border-transparent hover:border-border/50",
           isSettingActive && "opacity-70 cursor-wait"
         )}
@@ -106,7 +106,7 @@ export default function HistoryItem({
               {isSettingActive ? (
                 <Loader2 className="size-3.5 animate-spin text-primary" />
               ) : isSelected ? (
-                <div className="size-2 rounded-full bg-primary shadow-sm ring-2 ring-primary/20" />
+                <div className="size-2 rounded-full bg-primary  ring-2 ring-primary/20" />
               ) : null}
               <button
                 onClick={(e) => {

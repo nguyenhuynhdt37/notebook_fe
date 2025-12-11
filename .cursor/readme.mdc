@@ -101,8 +101,8 @@ Không thêm thư viện nặng (moment, lodash, axios...). Dùng native fetch.
 🚫 Abstraction code khó đọc  
 🚫 **Tự tạo component UI từ đầu — BẮT BUỘC dùng shadcn/ui**  
 🚫 Sử dụng UI library khác ngoài shadcn/ui
-🚫 Sử dụng bóng đổ mạnh, chỉ cần nhẹ nhàng là đủ
-
+🚫 Sử dụng bóng đổ mạnh, gần như không dùng hiệu ứng bóng đổ
+🚫 Để phần interface api trong component
 ## Tóm tắt
 
 "Code phải đơn giản, đen trắng, dễ hiểu, hiệu năng cao.  

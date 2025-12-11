@@ -109,7 +109,7 @@ export default function MessageItem({
           className={cn(
             "relative rounded-2xl px-4 py-3 transition-all",
             isUser
-              ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground shadow-md shadow-primary/20 max-w-[85%]"
+              ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground   max-w-[85%]"
               : "text-foreground w-full"
           )}
         >
@@ -141,7 +141,7 @@ export default function MessageItem({
               size="icon"
               className={cn(
                 "absolute top-2 right-2 size-8 opacity-0 group-hover:opacity-100 transition-all z-20",
-                "bg-background/90 hover:bg-background border border-border/50 rounded-lg shadow-sm",
+                "bg-background/90 hover:bg-background border border-border/50 rounded-lg ",
                 "backdrop-blur-sm"
               )}
               onClick={() => onCopy(message.content, message.id)}
@@ -231,13 +231,13 @@ export default function MessageItem({
         >
           <DialogPortal>
             <DialogOverlay className="bg-black/80 backdrop-blur-sm" />
-            <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto h-auto p-0 border-none bg-transparent shadow-none">
+            <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto h-auto p-0 border-none bg-transparent ">
               <DialogTitle className="sr-only">Xem ảnh</DialogTitle>
               <div className="relative w-full h-full flex items-center justify-center p-4">
                 <img
                   src={selectedImage}
                   alt="Preview"
-                  className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+                  className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg "
                   onClick={(e) => e.stopPropagation()}
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
@@ -248,7 +248,7 @@ export default function MessageItem({
                     e.stopPropagation();
                     setSelectedImage(null);
                   }}
-                  className="absolute top-4 right-4 p-2 rounded-full bg-black/80 hover:bg-black/95 text-white transition-all z-10 shadow-xl backdrop-blur-sm hover:scale-110"
+                  className="absolute top-4 right-4 p-2 rounded-full bg-black/80 hover:bg-black/95 text-white transition-all z-10  backdrop-blur-sm hover:scale-110"
                   aria-label="Đóng"
                 >
                   <X className="size-5" />

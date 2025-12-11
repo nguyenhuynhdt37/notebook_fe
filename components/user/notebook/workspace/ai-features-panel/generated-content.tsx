@@ -6,6 +6,7 @@ import api from "@/api/client/axios";
 import { AiSetResponse } from "@/types/user/ai-task";
 import SetList from "./task-list";
 import QuizPlayerModal from "./quiz-player-modal";
+import FlashcardViewerModal from "./flashcard-viewer-modal";
 
 interface GeneratedContentProps {
   notebookId: string;
@@ -19,6 +20,7 @@ export default function GeneratedContent({
   const [error, setError] = useState<string | null>(null);
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
+  const [flashcardModalOpen, setFlashcardModalOpen] = useState(false);
 
   const fetchSets = useCallback(async () => {
     if (!notebookId) return;
@@ -46,66 +48,6 @@ export default function GeneratedContent({
     const set = sets.find((s) => s.id === setId);
     if (!set) return;
 
-    // Chỉ mở modal quiz nếu type là quiz và status là done
-    if (set.setType === "quiz" && set.status === "done") {
-      setSelectedSetId(setId);
-      setQuizModalOpen(true);
-    } else if (set.setType === "tts" && set.status === "done") {
-      // Mở audio URL trong tab mới nếu có
-      const audioUrl = set.outputStats?.audioUrl;
-      if (audioUrl) {
-        window.open(audioUrl, "_blank");
-      } else {
-        toast.error("Không tìm thấy audio URL");
-      }
-    } else {
-      // TODO: Handle other types
-      console.log("View set:", setId, set.setType);
-    }
-  };
-
-  const handleDelete = async (setId: string) => {
-    try {
-      await api.delete(`/user/notebooks/${notebookId}/ai/sets/${setId}`);
-      toast.success("Đã xóa thành công");
-      fetchSets();
-    } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.message ||
-        (err.response?.status === 400
-          ? "Bạn chỉ có thể xóa AI Set do chính mình tạo"
-          : "Không thể xóa");
-      toast.error(errorMsg);
-    }
-  };
-
-  useEffect(() => {
-    fetchSets();
-  }, [fetchSets]);
-
-  return (
-    <div className="p-4">
-      <h3 className="text-xs font-medium text-muted-foreground mb-3">
-        Nội dung đã tạo
-      </h3>
-      <SetList
-        sets={sets}
-        loading={loading}
-        error={error}
-        onRetry={fetchSets}
-        onView={handleView}
-        onDelete={handleDelete}
-      />
-
-      {/* Quiz Player Modal */}
-      {selectedSetId && (
-        <QuizPlayerModal
-          open={quizModalOpen}
-          onOpenChange={setQuizModalOpen}
-          notebookId={notebookId}
-          aiSetId={selectedSetId}
-        />
-      )}
-    </div>
-  );
-}
+    // Chỉ cho xem khi đã done
+    if (set.status !== "done") {
+      toast.info("Nội dung đang được

@@ -70,7 +70,7 @@ export default function SourcesDetail({
     <Button
       variant="outline"
       size="sm"
-      className="text-xs font-medium gap-1.5 px-3 py-1.5 h-auto border-border/50 bg-background/80 hover:bg-background transition-colors shadow-sm"
+      className="text-xs font-medium gap-1.5 px-3 py-1.5 h-auto border-border/50 bg-background/80 hover:bg-background transition-colors "
       onClick={() => setIsOpen(true)}
     >
       <FileText className="size-3" />

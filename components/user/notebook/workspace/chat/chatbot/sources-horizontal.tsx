@@ -98,7 +98,7 @@ export default function SourcesHorizontal({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/90 hover:bg-background shadow-md border border-border/50 rounded-full"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/90 hover:bg-background  border border-border/50 rounded-full"
           onClick={() => scroll("left")}
         >
           <ChevronLeft className="size-4" />
@@ -108,7 +108,7 @@ export default function SourcesHorizontal({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/90 hover:bg-background shadow-md border border-border/50 rounded-full"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/90 hover:bg-background  border border-border/50 rounded-full"
           onClick={() => scroll("right")}
         >
           <ChevronRight className="size-4" />
@@ -127,7 +127,7 @@ export default function SourcesHorizontal({
           return (
             <div
               key={sourceId}
-              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[320px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300 shadow-sm overflow-hidden"
+              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[320px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300  overflow-hidden"
             >
               <div className="flex items-start gap-2.5">
                 <FileText className="size-4 text-primary shrink-0 mt-0.5" />
@@ -223,7 +223,7 @@ export default function SourcesHorizontal({
           return (
             <div
               key={sourceId}
-              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[320px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300 shadow-sm overflow-hidden"
+              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[320px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300  overflow-hidden"
             >
               <div className="flex items-start gap-2.5">
                 {source.favicon ? (
@@ -326,7 +326,7 @@ export default function SourcesHorizontal({
           sources.map((source) => (
             <div
               key={source.id}
-              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[240px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300 shadow-sm overflow-hidden"
+              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[240px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300  overflow-hidden"
             >
               <div className="flex items-start gap-2.5">
                 <FileText className="size-4 text-primary shrink-0 mt-0.5" />

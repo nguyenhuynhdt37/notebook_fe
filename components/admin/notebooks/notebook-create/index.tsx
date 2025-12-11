@@ -240,24 +240,22 @@ export default function NotebookCreate() {
                 Ảnh đại diện <span className="text-destructive">*</span>
               </Label>
               {preview ? (
-                <div className="relative">
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-muted">
-                    <img
-                      src={preview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-8 w-8"
-                      onClick={handleRemoveImage}
-                      disabled={isLoading}
-                    >
-                      <X className="size-4" />
-                    </Button>
-                  </div>
+                <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8"
+                    onClick={handleRemoveImage}
+                    disabled={isLoading}
+                  >
+                    <X className="size-4" />
+                  </Button>
                 </div>
               ) : (
                 <div

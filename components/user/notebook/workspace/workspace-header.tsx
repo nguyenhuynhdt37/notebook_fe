@@ -26,9 +26,13 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface WorkspaceHeaderProps {
   children?: React.ReactNode;
+  leftContent?: React.ReactNode;
 }
 
-export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
+export default function WorkspaceHeader({
+  children,
+  leftContent,
+}: WorkspaceHeaderProps) {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
 
@@ -46,7 +50,7 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
   };
 
   return (
-    <div className="border-b border-border/60 bg-gradient-to-br from-background via-background to-muted/10 backdrop-blur-sm shadow-[0_2px_12px_rgba(0,0,0,0.04)] px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4 shrink-0">
+    <div className="border-b border-border/60 px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4 shrink-0">
       <Button
         variant="ghost"
         size="icon"
@@ -83,6 +87,8 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
           </span>
         </div>
       </Link>
+
+      {leftContent}
 
       <div className="flex-1" />
 
@@ -197,10 +203,7 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar className="h-10 w-10">
                       {user.avatarUrl && (
-                        <AvatarImage
-                          src={user.avatarUrl}
-                          alt={user.fullName}
-                        />
+                        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                       )}
                       <AvatarFallback className="bg-foreground text-background">
                         {getInitials(user.fullName)}
@@ -240,4 +243,3 @@ export default function WorkspaceHeader({ children }: WorkspaceHeaderProps) {
     </div>
   );
 }
-

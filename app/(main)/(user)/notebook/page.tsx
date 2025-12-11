@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
-import Notebooks from "@/components/user/notebook/available";
+import NotebookTabs from "@/components/user/notebook";
 
 export const metadata: Metadata = {
-  title: "Nhóm cộng đồng",
+  title: "Notebooks",
   description:
-    "Khám phá và tham gia các nhóm cộng đồng trên Notebooks AI. Tìm kiếm nhóm theo tiêu đề, mô tả. Sắp xếp theo ngày tạo, số thành viên hoặc tên nhóm. Tham gia cộng đồng để chia sẻ và học hỏi kiến thức.",
+    "Khám phá và quản lý các nhóm notebook. Tìm kiếm nhóm cộng đồng, nhóm đã tham gia, nhóm bạn bè và notebook cá nhân.",
   keywords: [
+    "notebooks",
     "nhóm cộng đồng",
-    "cộng đồng notebook",
-    "tham gia nhóm",
-    "notebook cộng đồng",
+    "nhóm đã tham gia",
+    "notebook cá nhân",
     "chia sẻ kiến thức",
   ],
   openGraph: {
-    title: "Nhóm cộng đồng - Notebooks AI",
-    description:
-      "Khám phá và tham gia các nhóm cộng đồng trên Notebooks AI. Tìm kiếm và tham gia nhóm phù hợp với bạn.",
+    title: "Notebooks - Notebooks AI",
+    description: "Khám phá và quản lý các nhóm notebook trên Notebooks AI.",
     type: "website",
   },
 };
 
 export default function NotebookPage() {
-  return <Notebooks />;
+  return <NotebookTabs />;
 }

@@ -8,6 +8,7 @@ import { NotebookFileResponse } from "@/types/admin/notebook-file";
 import SourceSearch from "./source-search";
 import SourceList from "./source-list";
 import FileDetail from "./file-detail";
+import FileUpload from "./file-upload";
 
 interface SourcesPanelProps {
   notebookId: string;
@@ -141,11 +142,17 @@ export default function SourcesPanel({
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border/50 bg-background px-4 py-3 shrink-0">
-        <SourceSearch
-          onSelectAll={handleSelectAll}
-          selectedCount={selectedFiles.size}
-          totalCount={files.filter((f) => f.status === "done").length}
-        />
+        <div className="flex items-center justify-between gap-2">
+          <SourceSearch
+            onSelectAll={handleSelectAll}
+            selectedCount={selectedFiles.size}
+            totalCount={files.filter((f) => f.status === "done").length}
+          />
+          <FileUpload
+            notebookId={notebookId}
+            onSuccess={() => fetchFiles(search, false)}
+          />
+        </div>
         <Input
           placeholder="Tìm kiếm nguồn..."
           value={search}
