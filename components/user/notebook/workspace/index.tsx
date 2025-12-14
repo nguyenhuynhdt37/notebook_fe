@@ -33,6 +33,8 @@ export default function NotebookWorkspace({
   const [showAIFeatures, setShowAIFeatures] = useState(true);
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
   const [chatMode, setChatMode] = useState<"chatbot" | "group">("chatbot");
+  const [sourcesCollapsed, setSourcesCollapsed] = useState(false);
+  const [aiFeaturesCollapsed, setAiFeaturesCollapsed] = useState(false);
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -123,10 +125,16 @@ export default function NotebookWorkspace({
       <div className="flex-1 overflow-hidden flex">
         {/* Sources Panel - Left */}
         {showSources && (
-          <div className="flex-1 min-w-0 overflow-hidden border-r border-border/50">
+          <div
+            className={`min-w-0 overflow-hidden border-r border-border/50 transition-all duration-200 ${
+              sourcesCollapsed ? "w-12 flex-none" : "flex-1"
+            }`}
+          >
             <SourcesPanel
               notebookId={notebookId}
               onSelectionChange={setSelectedFileIds}
+              collapsed={sourcesCollapsed}
+              onCollapsedChange={setSourcesCollapsed}
             />
           </div>
         )}
@@ -144,10 +152,16 @@ export default function NotebookWorkspace({
 
         {/* AI Features Panel - Right */}
         {showAIFeatures && (
-          <div className="flex-1 min-w-0 overflow-hidden border-l border-border/50">
+          <div
+            className={`min-w-0 overflow-hidden border-l border-border/50 transition-all duration-200 ${
+              aiFeaturesCollapsed ? "w-12 flex-none" : "flex-1"
+            }`}
+          >
             <AIFeaturesPanel
               notebookId={notebookId}
               selectedFileIds={selectedFileIds}
+              collapsed={aiFeaturesCollapsed}
+              onCollapsedChange={setAiFeaturesCollapsed}
             />
           </div>
         )}

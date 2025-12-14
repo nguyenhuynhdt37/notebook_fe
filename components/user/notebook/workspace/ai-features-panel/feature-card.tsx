@@ -1,12 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FeatureCardProps {
   icon: React.ElementType;
   title: string;
-  description: string;
-  actionLabel: string;
+  description?: string;
   onClick: () => void;
 }
 
@@ -14,26 +19,27 @@ export default function FeatureCard({
   icon: Icon,
   title,
   description,
-  actionLabel,
   onClick,
 }: FeatureCardProps) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group">
-      <div className="p-2 rounded-lg bg-muted/50">
-        <Icon className="size-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{title}</p>
-        <p className="text-xs text-muted-foreground truncate">{description}</p>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onClick}
-        className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-      >
-        {actionLabel}
-      </Button>
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            onClick={onClick}
+            className="flex items-center justify-center gap-1.5 h-9 px-2 w-full min-w-0 text-xs"
+          >
+            <Icon className="size-3.5 shrink-0" />
+            <span className="truncate">{title}</span>
+          </Button>
+        </TooltipTrigger>
+        {description && (
+          <TooltipContent side="bottom" className="max-w-[200px]">
+            <p className="text-xs">{description}</p>
+          </TooltipContent>
+        )}
+      </Tooltip>
+    </TooltipProvider>
   );
 }
