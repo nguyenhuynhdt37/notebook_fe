@@ -141,6 +141,29 @@ export default function ChatInput({
     return true;
   };
 
+  // Listen for set-input event
+  useEffect(() => {
+    const handleSetInput = (e: CustomEvent<string>) => {
+      setInput(e.detail);
+      // Auto focus
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    };
+
+    window.addEventListener(
+      "chatbot:set-input",
+      handleSetInput as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "chatbot:set-input",
+        handleSetInput as EventListener
+      );
+    };
+  }, []);
+
   // Create conversation if not exists
   const ensureConversation = async (): Promise<string> => {
     if (selectedConversationId) return selectedConversationId;

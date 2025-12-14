@@ -67,48 +67,50 @@ export default function ChatInput({
   };
 
   return (
-    <div className="border-t p-4 space-y-3">
-      {/* Reply preview */}
-      {replyToMessage && (
-        <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-          <Reply className="size-4 text-muted-foreground mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium">
-              Trả lời {replyToMessage.userName}
-            </p>
-            <p className="text-xs text-muted-foreground line-clamp-2">
-              {replyToMessage.content}
-            </p>
+    <div className="border-t p-4">
+      <div className="max-w-4xl mx-auto space-y-3">
+        {/* Reply preview */}
+        {replyToMessage && (
+          <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+            <Reply className="size-4 text-muted-foreground mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium">
+                Trả lời {replyToMessage.userName}
+              </p>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {replyToMessage.content}
+              </p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onCancelReply}>
+              <X className="size-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={onCancelReply}>
-            <X className="size-4" />
+        )}
+
+        {/* Input area */}
+        <div className="flex items-end gap-3">
+          <Textarea
+            ref={textareaRef}
+            value={content}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+            placeholder="Nhập tin nhắn..."
+            disabled={disabled}
+            rows={1}
+            className={cn(
+              "flex-1 min-h-[44px] max-h-[120px] resize-none",
+              "focus-visible:ring-1"
+            )}
+          />
+          <Button
+            onClick={handleSend}
+            disabled={!content.trim() || disabled}
+            size="icon"
+            className="shrink-0"
+          >
+            <Send className="size-4" />
           </Button>
         </div>
-      )}
-
-      {/* Input area */}
-      <div className="flex items-end gap-3">
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          placeholder="Nhập tin nhắn..."
-          disabled={disabled}
-          rows={1}
-          className={cn(
-            "flex-1 min-h-[44px] max-h-[120px] resize-none",
-            "focus-visible:ring-1"
-          )}
-        />
-        <Button
-          onClick={handleSend}
-          disabled={!content.trim() || disabled}
-          size="icon"
-          className="shrink-0"
-        >
-          <Send className="size-4" />
-        </Button>
       </div>
     </div>
   );

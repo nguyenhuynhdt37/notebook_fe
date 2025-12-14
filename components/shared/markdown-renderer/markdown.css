@@ -601,24 +601,24 @@
   border: 1px solid #e5e7eb !important;
 }
 
-/* Image grid for chatbot - 2 columns */
+/* Image grid for chatbot - full width, auto height */
 .chatbot-markdown-wrapper .chatbot-markdown img {
   max-width: 100% !important;
   width: 100% !important;
-  max-height: 400px !important;
-  height: 400px !important;
-  object-fit: cover !important;
-  border-radius: 8px !important;
-  margin: 0 !important;
+  height: auto !important;
+  max-height: 70vh !important;
+  object-fit: contain !important;
+  border-radius: 12px !important;
+  margin: 0.75em 0 !important;
   display: block !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   cursor: pointer !important;
   transition: box-shadow 0.2s !important;
 }
 
 .chatbot-markdown-wrapper .chatbot-markdown img:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Image grid container (created by JS) - 1 column only */
@@ -633,9 +633,9 @@
 .chatbot-markdown-wrapper .chatbot-markdown .chatbot-image-grid img {
   width: 100% !important;
   max-width: 100% !important;
-  height: 400px !important;
-  max-height: 400px !important;
-  object-fit: cover !important;
+  height: auto !important;
+  max-height: 70vh !important;
+  object-fit: contain !important;
   display: block !important;
 }
 
@@ -647,9 +647,9 @@
 .chatbot-markdown-wrapper .chatbot-markdown p:has(img:only-child) img {
   width: 100% !important;
   max-width: 100% !important;
-  max-height: 400px !important;
-  height: 400px !important;
-  object-fit: cover !important;
+  height: auto !important;
+  max-height: 70vh !important;
+  object-fit: contain !important;
   margin: 0.5em 0 !important;
 }
 
@@ -666,22 +666,21 @@
 .chatbot-markdown-wrapper .chatbot-markdown > img {
   max-width: 100% !important;
   width: 100% !important;
-  max-height: 400px !important;
-  height: 400px !important;
-  object-fit: cover !important;
-  border-radius: 8px !important;
+  height: auto !important;
+  max-height: 70vh !important;
+  object-fit: contain !important;
+  border-radius: 12px !important;
   margin: 1em 0 !important;
   display: block !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   cursor: pointer !important;
   transition: box-shadow 0.2s !important;
 }
 
 .chatbot-markdown-wrapper .chatbot-markdown > img:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
 }
-
 
 /* Horizontal Rule improvements */
 .markdown-content hr {

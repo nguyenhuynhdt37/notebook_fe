@@ -1,4 +1,20 @@
-export type AiSetType = "quiz" | "flashcard" | "tts" | "video";
+export type AiSetType =
+  | "quiz"
+  | "flashcard"
+  | "tts"
+  | "video"
+  | "mindmap"
+  | "discuss"
+  | "summary"
+  | "study-guide"
+  | "faq"
+  | "key-concepts"
+  | "timeline"
+  | "translate"
+  | "eli5"
+  | "socratic"
+  | "critic"
+  | "deep-dive";
 
 export type AiSetStatus = "queued" | "processing" | "done" | "failed";
 
@@ -24,6 +40,7 @@ export interface AiSetResponse {
     voiceName?: string;
     quizIds?: string[];
     quizCount?: number;
+    mindmapId?: string;
   };
 }
 
@@ -32,6 +49,44 @@ export interface GenerateQuizResponse {
   status: string;
   message: string;
   success: boolean;
+}
+
+export interface AiSuggestionResponse {
+  aiSetId: string;
+  suggestions: string[];
+}
+
+export interface GenerateMindmapResponse {
+  aiSetId: string;
+  status: string;
+  message: string;
+  success: boolean;
+}
+
+export interface GenerateSuggestionResponse {
+  aiSetId: string;
+  status: string;
+  message: string;
+  success: boolean;
+}
+
+export type VideoLength = "short" | "medium" | "long";
+
+export interface GenerateVideoResponse {
+  aiSetId: string;
+  status: string;
+  message: string;
+  success: boolean;
+}
+
+export interface VideoDetailResponse {
+  id: string;
+  aiSetId: string;
+  videoUrl: string;
+  title: string;
+  style: string;
+  durationSeconds: number;
+  createdAt: string;
 }
 
 // Quiz Detail Types

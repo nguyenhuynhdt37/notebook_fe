@@ -153,3 +153,7 @@
 @utility rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+@utility transform-style-3d {
+  transform-style: preserve-3d;
+}

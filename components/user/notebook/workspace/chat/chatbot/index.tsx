@@ -100,26 +100,28 @@ export default function Chatbot({
   return (
     <div className="flex flex-col h-full bg-background relative">
       {/* Header */}
-      <div className="border-b border-border/50 px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 relative z-10">
-        <div className="flex items-center gap-3.5">
-          <div>
-            <h3 className="font-semibold text-base text-foreground leading-tight tracking-tight">
-              Chatbot AI
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Hỏi về tài liệu trong notebook
-            </p>
+      <div className="border-b border-border/50 px-4 sm:px-6 py-4 shrink-0 relative z-10">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div>
+              <h3 className="font-semibold text-base text-foreground leading-tight tracking-tight">
+                Chatbot AI
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Hỏi về tài liệu trong notebook
+              </p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9 hover:bg-muted/60 transition-colors"
+            data-history-btn
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+          >
+            <History className="size-4.5" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-9 hover:bg-muted/60 transition-colors"
-          data-history-btn
-          onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-        >
-          <History className="size-4.5" />
-        </Button>
       </div>
 
       {/* History Sidebar */}

@@ -12,6 +12,7 @@ interface SetListProps {
   onRetry?: () => void;
   onView?: (setId: string) => void;
   onDelete?: (setId: string) => void;
+  playingId?: string | null;
 }
 
 export default function SetList({
@@ -21,6 +22,7 @@ export default function SetList({
   onRetry,
   onView,
   onDelete,
+  playingId,
 }: SetListProps) {
   if (loading) {
     return (
@@ -61,9 +63,15 @@ export default function SetList({
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 p-4">
       {sets.map((set) => (
-        <SetItem key={set.id} set={set} onView={onView} onDelete={onDelete} />
+        <SetItem
+          key={set.id}
+          set={set}
+          onView={onView}
+          onDelete={onDelete}
+          isPlaying={playingId === set.id}
+        />
       ))}
     </div>
   );

@@ -2,9 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import { NotebookFileResponse } from "@/types/admin/notebook-file";
+import { PanelLeftClose, PanelLeft, FileText, FolderOpen } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import SourceSearch from "./source-search";
 import SourceList from "./source-list";
 import FileDetail from "./file-detail";
@@ -13,11 +21,15 @@ import FileUpload from "./file-upload";
 interface SourcesPanelProps {
   notebookId: string;
   onSelectionChange?: (selectedFileIds: string[]) => void;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 export default function SourcesPanel({
   notebookId,
   onSelectionChange,
+  collapsed = false,
+  onCollapsedChange,
 }: SourcesPanelProps) {
   const [files, setFiles] = useState<NotebookFileResponse[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
@@ -139,15 +151,119 @@ export default function SourcesPanel({
     );
   }
 
+  // Collapsed state - thin sidebar with icons
+  if (collapsed) {
+    const doneFiles = files.filter((f) => f.status === "done");
+    return (
+      <div className="h-full w-12 flex flex-col bg-background border-r border-border/50">
+        {/* Toggle button */}
+        <div className="p-2 border-b border-border/50">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onCollapsedChange?.(false)}
+                  className="size-8"
+                >
+                  <PanelLeft className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Mở rộng panel</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* File icons */}
+        <div className="flex-1 overflow-y-auto py-2 flex flex-col items-center gap-1">
+          {doneFiles.slice(0, 8).map((file) => (
+            <TooltipProvider key={file.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={selectedFiles.has(file.id) ? "secondary" : "ghost"}
+                    size="icon"
+                    onClick={() => handleToggleFile(file.id)}
+                    className="size-8"
+                  >
+                    <FileText className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p className="max-w-48 truncate">{file.originalFilename}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ))}
+          {doneFiles.length > 8 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="size-8 flex items-center justify-center text-xs text-muted-foreground">
+                    +{doneFiles.length - 8}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{doneFiles.length - 8} file khác</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
+        {/* Selected count */}
+        {selectedFiles.size > 0 && (
+          <div className="p-2 border-t border-border/50">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="size-8 flex items-center justify-center text-xs font-medium bg-primary text-primary-foreground rounded-md">
+                    {selectedFiles.size}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{selectedFiles.size} file đã chọn</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Expanded state - full panel
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border/50 bg-background px-4 py-3 shrink-0">
         <div className="flex items-center justify-between gap-2">
-          <SourceSearch
-            onSelectAll={handleSelectAll}
-            selectedCount={selectedFiles.size}
-            totalCount={files.filter((f) => f.status === "done").length}
-          />
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onCollapsedChange?.(true)}
+                    className="size-8"
+                  >
+                    <PanelLeftClose className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Thu gọn panel</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <SourceSearch
+              onSelectAll={handleSelectAll}
+              selectedCount={selectedFiles.size}
+              totalCount={files.filter((f) => f.status === "done").length}
+            />
+          </div>
           <FileUpload
             notebookId={notebookId}
             onSuccess={() => fetchFiles(search, false)}

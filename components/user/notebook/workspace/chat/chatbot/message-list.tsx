@@ -263,28 +263,30 @@ export default function MessageList({
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto py-6 px-4 sm:px-6 space-y-5 scroll-smooth"
+      className="flex-1 overflow-y-auto py-6 px-4 sm:px-6 scroll-smooth"
     >
-      {isLoadingHistory && hasMore && (
-        <div className="text-center py-6">
-          <p className="text-sm text-muted-foreground/70 font-medium">
-            Đang tải tin nhắn cũ...
-          </p>
-        </div>
-      )}
+      <div className="max-w-4xl mx-auto space-y-5">
+        {isLoadingHistory && hasMore && (
+          <div className="text-center py-6">
+            <p className="text-sm text-muted-foreground/70 font-medium">
+              Đang tải tin nhắn cũ...
+            </p>
+          </div>
+        )}
 
-      {[...messages].reverse().map((message) => (
-        <MessageItem
-          key={message.id}
-          message={message}
-          user={user}
-          copiedId={copiedId}
-          onCopy={handleCopy}
-          formatTime={formatTime}
-        />
-      ))}
+        {[...messages].reverse().map((message) => (
+          <MessageItem
+            key={message.id}
+            message={message}
+            user={user}
+            copiedId={copiedId}
+            onCopy={handleCopy}
+            formatTime={formatTime}
+          />
+        ))}
 
-      <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   );
 }

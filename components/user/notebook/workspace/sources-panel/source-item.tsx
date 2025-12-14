@@ -3,11 +3,13 @@
 import { useState } from "react";
 import {
   MoreVertical,
+  FileText,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileSpreadsheet,
+  FileCode,
   File,
-  Video,
-  Music,
-  FileQuestion,
-  Eye,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +19,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -42,26 +43,70 @@ interface SourceItemProps {
   onViewDetail?: (fileId: string) => void;
 }
 
-const getFileIcon = (mimeType: string) => {
+const getFileIcon = (mimeType: string, filename: string) => {
   const lowerType = mimeType.toLowerCase();
+  const ext = filename.split(".").pop()?.toLowerCase() || "";
+
+  // PDF
+  if (lowerType.includes("pdf") || ext === "pdf") {
+    return FileText;
+  }
+  // Word/Doc
   if (
-    lowerType.includes("pdf") ||
     lowerType.includes("word") ||
-    lowerType.includes("document")
+    lowerType.includes("document") ||
+    ["doc", "docx"].includes(ext)
   ) {
-    return File;
+    return FileText;
   }
-  if (lowerType.includes("video") || lowerType.includes("mp4")) {
-    return Video;
+  // Excel/Spreadsheet
+  if (
+    lowerType.includes("excel") ||
+    lowerType.includes("spreadsheet") ||
+    ["xls", "xlsx", "csv"].includes(ext)
+  ) {
+    return FileSpreadsheet;
   }
+  // Image
+  if (
+    lowerType.includes("image") ||
+    ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)
+  ) {
+    return FileImage;
+  }
+  // Video
+  if (
+    lowerType.includes("video") ||
+    ["mp4", "avi", "mov", "mkv", "webm"].includes(ext)
+  ) {
+    return FileVideo;
+  }
+  // Audio
   if (
     lowerType.includes("audio") ||
-    lowerType.includes("mp3") ||
-    lowerType.includes("podcast")
+    ["mp3", "wav", "ogg", "m4a", "flac"].includes(ext)
   ) {
-    return Music;
+    return FileAudio;
   }
-  return FileQuestion;
+  // Code
+  if (
+    [
+      "js",
+      "ts",
+      "jsx",
+      "tsx",
+      "py",
+      "java",
+      "cpp",
+      "c",
+      "html",
+      "css",
+      "json",
+    ].includes(ext)
+  ) {
+    return FileCode;
+  }
+  return File;
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -76,7 +121,6 @@ const getStatusLabel = (status: string): string => {
     approved: "Đã duyệt",
     rejected: "Từ chối",
     processing: "Đang xử lý",
-    done: "Hoàn thành",
     failed: "Thất bại",
   };
   return statusMap[status] || status;
@@ -85,7 +129,6 @@ const getStatusLabel = (status: string): string => {
 const getStatusVariant = (
   status: string
 ): "default" | "secondary" | "destructive" | "outline" => {
-  if (status === "done") return "default";
   if (status === "processing" || status === "approved") return "secondary";
   if (status === "failed" || status === "rejected") return "destructive";
   return "outline";
@@ -101,7 +144,7 @@ export default function SourceItem({
 }: SourceItemProps) {
   const user = useUserStore((state) => state.user);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const IconComponent = getFileIcon(source.mimeType);
+  const IconComponent = getFileIcon(source.mimeType, source.originalFilename);
 
   const isMyFile =
     user &&
@@ -109,18 +152,17 @@ export default function SourceItem({
     String(user.id) === String(source.uploadedBy.id);
   const canRemove = isMyFile && onRemove;
   const canSelect = source.status === "done" && onToggleSelect;
+  const isDone = source.status === "done";
 
+  // Click vào item = xem chi tiết
   const handleItemClick = () => {
-    if (canSelect) {
-      onToggleSelect?.(source.id);
+    if (isDone) {
+      onViewDetail?.(source.id);
     }
   };
 
-  const handleViewDetail = () => {
-    onViewDetail?.(source.id);
-  };
-
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setShowDeleteDialog(true);
   };
 
@@ -134,15 +176,6 @@ export default function SourceItem({
     onToggleSelect?.(source.id);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
     <>
       <div
@@ -150,21 +183,15 @@ export default function SourceItem({
           selected
             ? "bg-muted/60 border border-border/60"
             : "hover:bg-muted/40 border border-transparent"
-        } ${canSelect ? "cursor-pointer" : ""}`}
+        } ${isDone ? "cursor-pointer" : ""}`}
         onClick={handleItemClick}
       >
-        {canSelect && (
-          <div
-            className="shrink-0"
-            onClick={handleCheckboxClick}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <Checkbox checked={selected} className="size-4.5" />
-          </div>
-        )}
+        {/* Icon */}
         <div className="shrink-0 p-1.5 rounded-md bg-muted/50">
           <IconComponent className="size-4 text-foreground" />
         </div>
+
+        {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate text-foreground leading-tight">
             {source.originalFilename}
@@ -173,12 +200,15 @@ export default function SourceItem({
             <span className="text-xs text-muted-foreground font-medium">
               {formatFileSize(source.fileSize)}
             </span>
-            <Badge
-              variant={getStatusVariant(source.status)}
-              className="text-xs px-2 py-0.5 h-5 font-medium"
-            >
-              {getStatusLabel(source.status)}
-            </Badge>
+            {/* Chỉ hiển thị badge khi không phải done */}
+            {source.status !== "done" && (
+              <Badge
+                variant={getStatusVariant(source.status)}
+                className="text-xs px-2 py-0.5 h-5 font-medium"
+              >
+                {getStatusLabel(source.status)}
+              </Badge>
+            )}
             {source.uploadedBy && (
               <span className="text-xs text-muted-foreground truncate">
                 {source.uploadedBy.fullName}
@@ -189,37 +219,30 @@ export default function SourceItem({
             )}
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 opacity-0 group-hover:opacity-100 size-8 hover:bg-muted/60"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreVertical className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={handleViewDetail} className="gap-2">
-              <Eye className="size-4" />
-              <span className="text-sm">Xem chi tiết</span>
-            </DropdownMenuItem>
-            {canRemove && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleDeleteClick}
-                  variant="destructive"
-                  className="gap-2"
-                >
-                  <Trash2 className="size-4" />
-                  <span className="text-sm">Xóa</span>
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+
+        {/* Checkbox ở bên phải */}
+        {canSelect && (
+          <div
+            className="shrink-0"
+            onClick={handleCheckboxClick}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <Checkbox checked={selected} className="size-4.5" />
+          </div>
+        )}
+
+        {/* Menu - chỉ hiện khi có quyền xóa */}
+        {canRemove && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 opacity-0 group-hover:opacity-100 size-8 hover:bg-destructive/10 hover:text-destructive"
+            onClick={handleDeleteClick}
+          >
+            <MoreVertical className="size-4 group-hover:hidden" />
+            <Trash2 className="size-4 hidden group-hover:block" />
+          </Button>
+        )}
       </div>
 
       {canRemove && (
