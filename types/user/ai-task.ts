@@ -51,9 +51,15 @@ export interface GenerateQuizResponse {
   success: boolean;
 }
 
+export interface SuggestionItem {
+  question: string;
+  hint: string;
+  category: string;
+}
+
 export interface AiSuggestionResponse {
   aiSetId: string;
-  suggestions: string[];
+  suggestions: SuggestionItem[];
 }
 
 export interface GenerateMindmapResponse {
@@ -87,6 +93,33 @@ export interface VideoDetailResponse {
   style: string;
   durationSeconds: number;
   createdAt: string;
+}
+
+export interface GenerateSummaryResponse {
+  id: string;
+  status: string;
+  type: string;
+  createdAt: string;
+}
+
+export interface SummaryDetailResponse {
+  id: string;
+  title: string;
+  contentMd: string;
+  scriptTts: string | null;
+  language: string;
+  hasAudio: boolean;
+  audioUrl: string | null;
+  audioDurationMs: number | null;
+  audioFormat: string | null;
+  ttsProvider: string | null;
+  ttsModel: string | null;
+  voiceId: string | null;
+  voiceLabel: string | null;
+  voiceSpeed: number | null;
+  voicePitch: number | null;
+  createdAt: string;
+  createdBy: string;
 }
 
 // Quiz Detail Types

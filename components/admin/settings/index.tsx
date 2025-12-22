@@ -33,7 +33,7 @@ export default function Settings() {
             <Label htmlFor="site-name">Tên hệ thống</Label>
             <Input
               id="site-name"
-              defaultValue="Notebooks AI"
+              defaultValue="EduGenius"
               placeholder="Nhập tên hệ thống"
             />
           </div>

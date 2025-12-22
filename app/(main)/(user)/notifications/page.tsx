@@ -1,4 +1,4 @@
-import Notifications from "@/components/user/notifications";
+import Notifications from "@/components/users/notifications";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

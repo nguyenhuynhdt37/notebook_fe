@@ -11,8 +11,8 @@ export default function Loading() {
           <div className="absolute inset-0 w-32 h-32 rounded-full border-4 border-transparent border-t-foreground border-r-foreground/50 animate-spin" />
           <div className="relative w-24 h-24 flex items-center justify-center">
             <Image
-              src="/logo/notebooks-logo-64.svg"
-              alt="Notebooks AI"
+              src="/logo/vinh-university-logo.png"
+              alt="EduGenius"
               width={64}
               height={64}
               className="text-foreground"
@@ -21,7 +21,7 @@ export default function Loading() {
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-3xl font-bold text-foreground">Notebooks AI</h1>
+          <h1 className="text-3xl font-bold text-foreground">EduGenius</h1>
 
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">

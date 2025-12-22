@@ -1,4 +1,4 @@
-import Home from "@/components/user/home";
+import Home from "@/components/users/home";
 import React from "react";
 
 const HomePage = () => {
