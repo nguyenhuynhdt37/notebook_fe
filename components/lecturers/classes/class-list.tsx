@@ -13,12 +13,14 @@ import ClassPagination from "./class-pagination";
 import ClassCard from "./class-card";
 
 interface ClassListProps {
-  assignmentId: string;
+  assignmentId?: string;
+  termId?: string;
   showAddButton?: boolean;
 }
 
 export default function ClassList({
   assignmentId,
+  termId,
   showAddButton = true,
 }: ClassListProps) {
   const [data, setData] = useState<LecturerClassPagedResponse | null>(null);
@@ -28,7 +30,7 @@ export default function ClassList({
 
   useEffect(() => {
     loadClasses();
-  }, [assignmentId, page, search]);
+  }, [assignmentId, termId, page, search]);
 
   const loadClasses = async () => {
     setIsLoading(true);
@@ -37,11 +39,15 @@ export default function ClassList({
         page: page.toString(),
         size: "12",
         ...(search && { q: search }),
+        ...(termId && { termId }),
       });
 
-      const res = await api.get<LecturerClassPagedResponse>(
-        `/lecturer/teaching-assignments/${assignmentId}/classes?${params}`
-      );
+      let url = `/lecturer/classes?${params}`;
+      if (assignmentId) {
+        url = `/lecturer/teaching-assignments/${assignmentId}/classes?${params}`;
+      }
+
+      const res = await api.get<LecturerClassPagedResponse>(url);
       setData(res.data);
     } catch {
       toast.error("Không thể tải danh sách lớp học phần");
@@ -59,10 +65,10 @@ export default function ClassList({
     <div className="space-y-4">
       {/* Filter */}
       <ClassFilter
-        assignmentId={assignmentId}
+        assignmentId={assignmentId || ""}
         search={search}
         onSearchChange={handleSearchChange}
-        showAddButton={showAddButton}
+        showAddButton={showAddButton && !!assignmentId}
       />
 
       {/* Stats Summary */}
@@ -137,7 +143,7 @@ function ClassListEmpty({
   hasSearch,
   showAddButton,
 }: {
-  assignmentId: string;
+  assignmentId?: string;
   hasSearch: boolean;
   showAddButton: boolean;
 }) {
@@ -157,9 +163,9 @@ function ClassListEmpty({
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         {hasSearch
           ? "Không tìm thấy lớp nào phù hợp với từ khóa"
-          : "Bạn chưa có lớp học phần nào. Hãy thêm lớp để bắt đầu quản lý sinh viên."}
+          : "Bạn chưa có lớp học phần nào."}
       </p>
-      {!hasSearch && showAddButton && (
+      {!hasSearch && showAddButton && assignmentId && (
         <Button asChild size="lg">
           <Link href={`/lecturer/assignments/${assignmentId}/classes/add`}>
             <Plus className="mr-2 size-4" />

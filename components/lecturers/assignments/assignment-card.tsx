@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   BookOpen,
   Eye,
+  LibraryBig,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,7 +100,7 @@ export default function AssignmentCard({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/lecturer/assignments/${id}/classes`}>
+                <Link href={`/lecturer/classes?assignmentId=${id}`}>
                   <Layers className="mr-2 size-4" />
                   Lớp học phần ({classCount})
                 </Link>
@@ -115,6 +116,12 @@ export default function AssignmentCard({
                 <Link href={`/lecturer/assignments/${id}/materials`}>
                   <BookOpen className="mr-2 size-4" />
                   Tài liệu giảng dạy
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/lecturer/assignments/${id}/chapters`}>
+                  <LibraryBig className="mr-2 size-4" />
+                  Chương học
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -144,7 +151,7 @@ export default function AssignmentCard({
       <div className="relative flex items-center justify-between pt-3 border-t border-foreground/10 z-10">
         <div className="flex items-center gap-4">
           <Link
-            href={`/lecturer/assignments/${id}/classes`}
+            href={`/lecturer/classes?assignmentId=${id}`}
             className="flex items-center gap-1.5 bg-background/60 backdrop-blur-sm rounded-md px-2 py-1 hover:bg-background/80 transition-colors"
           >
             <Layers className="size-3.5 text-muted-foreground" />

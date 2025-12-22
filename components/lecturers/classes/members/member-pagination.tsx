@@ -1,18 +1,14 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 
 interface MemberPaginationProps {
   page: number;
   totalPages: number;
-  total: number;
   onPageChange: (page: number) => void;
 }
 
 export default function MemberPagination({
   page,
   totalPages,
-  total,
   onPageChange,
 }: MemberPaginationProps) {
   if (totalPages <= 1) return null;
@@ -20,7 +16,7 @@ export default function MemberPagination({
   return (
     <div className="flex items-center justify-between pt-4 border-t">
       <span className="text-sm text-muted-foreground">
-        Trang {page + 1} / {totalPages} • {total} sinh viên
+        Trang {page + 1} / {totalPages}
       </span>
       <div className="flex gap-2">
         <Button

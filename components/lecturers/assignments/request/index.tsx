@@ -106,7 +106,7 @@ export default function RequestTeachingForm() {
               </Label>
               <LecturerTermSelect
                 value={formData.termId || null}
-                onChange={(val) =>
+                onValueChange={(val) =>
                   setFormData({ ...formData, termId: val || "" })
                 }
                 placeholder="Chọn học kỳ muốn dạy"

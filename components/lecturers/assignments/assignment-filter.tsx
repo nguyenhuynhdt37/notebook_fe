@@ -33,7 +33,7 @@ export default function AssignmentFilter({
       <div className="w-[220px]">
         <LecturerTermSelect
           value={termId || null}
-          onChange={(val) => onTermIdChange(val || "")}
+          onValueChange={(val) => onTermIdChange(val || "")}
           placeholder="Tất cả học kỳ"
         />
       </div>

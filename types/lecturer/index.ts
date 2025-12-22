@@ -1,3 +1,3 @@
-// Lecturer types barrel file
 export * from "./assignment";
 export * from "./reference";
+export * from "./class";

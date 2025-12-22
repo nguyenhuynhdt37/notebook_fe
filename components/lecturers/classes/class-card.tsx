@@ -1,7 +1,26 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Users, BookOpen } from "lucide-react";
+import Link from "next/link";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  BookOpen,
+  MoreHorizontal,
+  Eye,
+  UserCheck,
+  Settings,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LecturerClassResponse } from "@/types/lecturer";
 
 const DAY_OF_WEEK_LABELS: Record<number, string> = {
@@ -22,7 +41,9 @@ export default function ClassCard({ data }: ClassCardProps) {
   const dayLabel = DAY_OF_WEEK_LABELS[data.dayOfWeek] || `T${data.dayOfWeek}`;
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border bg-card p-4 transition-all hover:border-foreground/30 hover:shadow-lg">
+    <div
+      className="group relative block overflow-hidden rounded-xl border bg-card p-4 transition-all hover:border-foreground/30 hover:shadow-lg"
+    >
       {/* Dot Pattern Background */}
       <div
         className="absolute inset-0 opacity-[0.4]"
@@ -45,12 +66,54 @@ export default function ClassCard({ data }: ClassCardProps) {
         <code className="rounded-md bg-background/80 backdrop-blur-sm border px-2 py-1 text-xs font-mono font-semibold">
           {data.classCode}
         </code>
-        <Badge
-          variant={data.isActive ? "default" : "secondary"}
-          className="text-[10px]"
-        >
-          {data.isActive ? "Hoạt động" : "Tạm dừng"}
-        </Badge>
+        <div className="flex items-center gap-1">
+          <Badge
+            variant={data.isActive ? "default" : "secondary"}
+            className="text-[10px]"
+          >
+            {data.isActive ? "Hoạt động" : "Tạm dừng"}
+          </Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1"
+                onClick={(e) => e.preventDefault()}
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href={`/lecturer/classes/${data.id}`}>
+                  <Eye className="mr-2 size-4" />
+                  Chi tiết lớp học
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/lecturer/classes/${data.id}/members`}>
+                  <Users className="mr-2 size-4" />
+                  Danh sách sinh viên
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/lecturer/classes/${data.id}/attendance`}>
+                  <UserCheck className="mr-2 size-4" />
+                  Điểm danh (Sắp có)
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/lecturer/classes/${data.id}/settings`}>
+                  <Settings className="mr-2 size-4" />
+                  Cài đặt
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Subject Name */}

@@ -13,4 +13,5 @@ export interface AuthResponse {
 
 export interface ErrorResponse {
   error: string;
+  message?: string;
 }

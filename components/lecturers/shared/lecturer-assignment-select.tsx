@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown, Calendar } from "lucide-react";
+import { Check, ChevronsUpDown, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,53 +18,75 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import api from "@/api/client/axios";
-import { LecturerTermPagedResponse } from "@/types/lecturer";
+import { LecturerAssignmentPagedResponse } from "@/types/lecturer";
 
-interface TermOption {
+interface AssignmentOption {
   id: string;
-  code: string;
-  name: string;
+  subjectName: string;
+  subjectCode: string;
+  termName: string;
 }
 
-interface LecturerTermSelectProps {
+interface LecturerAssignmentSelectProps {
   value: string | null;
-  onValueChange: (value: string | null) => void;
+  onChange: (value: string | null) => void;
+  termId?: string | null;
   placeholder?: string;
+  disabled?: boolean;
 }
 
-export default function LecturerTermSelect({
+export default function LecturerAssignmentSelect({
   value,
-  onValueChange,
-  placeholder = "Chọn học kỳ",
-}: LecturerTermSelectProps) {
+  onChange,
+  termId,
+  placeholder = "Chọn môn học",
+  disabled = false,
+}: LecturerAssignmentSelectProps) {
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<TermOption[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [options, setOptions] = useState<AssignmentOption[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const loadTerms = async () => {
+    const loadAssignments = async () => {
       setIsLoading(true);
       try {
-        const res = await api.get<LecturerTermPagedResponse>(
-          "/lecturer/terms?size=100"
+        const params = new URLSearchParams({
+          size: "100",
+          ...(termId && { termId }),
+        });
+
+        const res = await api.get<LecturerAssignmentPagedResponse>(
+          `/lecturer/teaching-assignments?${params}`
         );
+
         if (res.data?.items) {
           setOptions(
-            res.data.items.map((t) => ({
-              id: t.id,
-              code: t.code,
-              name: t.name,
+            res.data.items.map((a) => ({
+              id: a.id,
+              subjectName: a.subjectName,
+              subjectCode: a.subjectCode,
+              termName: a.termName,
             }))
           );
         }
       } catch {
-        // Silently fail - keep options empty
+        // Silently fail
+        setOptions([]);
       } finally {
         setIsLoading(false);
       }
     };
-    loadTerms();
-  }, []);
+
+    loadAssignments();
+  }, [termId]);
+
+  // Reset value if options change and current value is not in new options
+  // But be careful not to reset if it's just loading or if value is null
+  useEffect(() => {
+    if (value && options.length > 0 && !options.find((o) => o.id === value)) {
+      onChange(null);
+    }
+  }, [options, value, onChange]);
 
   const selectedOption = options.find((o) => o.id === value);
 
@@ -76,14 +98,17 @@ export default function LecturerTermSelect({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between font-normal h-9"
-          disabled={isLoading}
+          disabled={disabled || isLoading}
         >
-          <div className="flex items-center gap-2">
-            <Calendar className="size-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 truncate">
+            <BookOpen className="size-4 text-muted-foreground shrink-0" />
             {selectedOption ? (
-              <span className="truncate">{selectedOption.name}</span>
+              <span className="truncate">
+                {selectedOption.subjectName} ({selectedOption.subjectCode}) -{" "}
+                {selectedOption.termName}
+              </span>
             ) : (
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground truncate">
                 {isLoading ? "Đang tải..." : placeholder}
               </span>
             )}
@@ -91,16 +116,16 @@ export default function LecturerTermSelect({
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 min-w-[300px]" align="start">
+      <PopoverContent className="w-[320px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Tìm học kỳ..." />
+          <CommandInput placeholder="Tìm môn học..." />
           <CommandList>
-            <CommandEmpty>Không tìm thấy học kỳ nào.</CommandEmpty>
+            <CommandEmpty>Không tìm thấy môn học nào.</CommandEmpty>
             <CommandGroup>
               <CommandItem
                 value="none"
                 onSelect={() => {
-                  onValueChange(null);
+                  onChange(null);
                   setOpen(false);
                 }}
               >
@@ -110,14 +135,14 @@ export default function LecturerTermSelect({
                     value === null ? "opacity-100" : "opacity-0"
                   )}
                 />
-                <span className="text-muted-foreground">Tất cả học kỳ</span>
+                <span className="text-muted-foreground">Tất cả môn học</span>
               </CommandItem>
               {options.map((option) => (
                 <CommandItem
                   key={option.id}
-                  value={`${option.code} ${option.name}`}
+                  value={`${option.subjectCode} ${option.subjectName} ${option.termName} ${option.id}`}
                   onSelect={() => {
-                    onValueChange(option.id);
+                    onChange(option.id);
                     setOpen(false);
                   }}
                 >
@@ -128,9 +153,9 @@ export default function LecturerTermSelect({
                     )}
                   />
                   <div className="flex flex-col">
-                    <span className="font-medium">{option.name}</span>
+                    <span className="font-medium">{option.subjectName}</span>
                     <span className="text-xs text-muted-foreground">
-                      {option.code}
+                      {option.subjectCode} - {option.termName}
                     </span>
                   </div>
                 </CommandItem>
