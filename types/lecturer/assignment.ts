@@ -6,15 +6,44 @@
 
 export interface LecturerAssignmentResponse {
   id: string;
+  subjectId: string;
   subjectCode: string;
   subjectName: string;
+  subjectCredit: number;
+  termId: string;
+  termCode: string;
   termName: string;
+  termStartDate: string;
+  termEndDate: string;
+  termIsActive: boolean;
   status: string;
   approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  termStatus: "ACTIVE" | "UPCOMING" | "PAST";
   classCount: number;
   studentCount: number;
+  fileCount: number;
+  quizCount: number;
+  flashcardCount: number;
+  summaryCount: number;
+  videoCount: number;
+  notebookId: string | null;
+  notebookTitle: string | null;
+  notebookDescription: string | null;
+  notebookThumbnailUrl: string | null;
+  notebookCreatedAt: string | null;
+  notebookUpdatedAt: string | null;
+  note: string | null;
+  createdBy: string;
   createdAt: string;
-  termStatus: "ACTIVE" | "UPCOMING" | "PAST";
+  recentClasses: {
+    id: string;
+    classCode: string;
+    room: string;
+    dayOfWeek: number;
+    periods: string;
+    studentCount: number;
+    isActive: boolean;
+  }[];
 }
 
 export interface LecturerAssignmentPagedResponse {
