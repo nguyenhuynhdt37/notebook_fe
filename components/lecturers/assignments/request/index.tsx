@@ -47,7 +47,7 @@ export default function RequestTeachingForm() {
 
     setIsLoading(true);
     try {
-      await api.post("/lecturer/assignments/request", {
+      await api.post("/lecturer/teaching-assignments/request", {
         termId: formData.termId,
         subjectId: formData.subjectId,
         note: formData.note || undefined,

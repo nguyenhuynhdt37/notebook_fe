@@ -65,7 +65,7 @@ export default function LecturerAssignments() {
       });
 
       const response = await api.get<LecturerAssignmentPagedResponse>(
-        `/lecturer/assignments?${params}`
+        `/lecturer/teaching-assignments?${params}`
       );
       setData(response.data);
     } catch {

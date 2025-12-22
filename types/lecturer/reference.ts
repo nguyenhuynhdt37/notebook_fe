@@ -101,3 +101,29 @@ export interface LecturerClassPagedResponse {
     totalPages: number;
   };
 }
+
+// === STUDENT ===
+
+export interface LecturerStudentResponse {
+  id: string;
+  studentCode: string;
+  fullName: string;
+  firstName: string;
+  lastName: string;
+  dob: string;
+  classCode: string;
+  subjectCode: string;
+  subjectName: string;
+  termName: string;
+  createdAt: string;
+}
+
+export interface LecturerStudentPagedResponse {
+  items: LecturerStudentResponse[];
+  meta: {
+    page: number;
+    size: number;
+    total: number;
+    totalPages: number;
+  };
+}
