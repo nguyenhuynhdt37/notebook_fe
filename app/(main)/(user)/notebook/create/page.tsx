@@ -1,4 +1,4 @@
-import CreateNotebook from "@/components/user/notebook/create";
+import CreateNotebook from "@/components/users/notebook/create";
 
 export const metadata = {
   title: "Tạo Notebook mới | Notebooks",

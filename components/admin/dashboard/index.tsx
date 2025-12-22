@@ -40,7 +40,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground">
-          Tổng quan về hệ thống Notebooks AI
+          Tổng quan về hệ thống EduGenius
         </p>
       </div>
 

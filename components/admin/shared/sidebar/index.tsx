@@ -9,6 +9,11 @@ import {
   Settings,
   LogOut,
   Menu,
+  Building2,
+  GraduationCap,
+  Calendar,
+  BookOpen,
+  ClipboardList,
 } from "lucide-react";
 import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
@@ -26,6 +31,36 @@ const menuItems = [
     title: "Người dùng",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Giảng viên",
+    href: "/admin/lecturers",
+    icon: GraduationCap,
+  },
+  {
+    title: "Đơn vị tổ chức",
+    href: "/admin/org-units",
+    icon: Building2,
+  },
+  {
+    title: "Học kỳ",
+    href: "/admin/terms",
+    icon: Calendar,
+  },
+  {
+    title: "Môn học",
+    href: "/admin/subjects",
+    icon: BookOpen,
+  },
+  {
+    title: "Ngành học",
+    href: "/admin/majors",
+    icon: GraduationCap,
+  },
+  {
+    title: "Phân công giảng dạy",
+    href: "/admin/teaching-assignments",
+    icon: ClipboardList,
   },
   {
     title: "Notebooks",

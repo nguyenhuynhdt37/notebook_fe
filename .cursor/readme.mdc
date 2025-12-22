@@ -2,108 +2,651 @@
 alwaysApply: true
 ---
 
-# NOTEBOOKS Project Rules
+# 📘 NOTEBOOKS Project Rules
 
-> **Lưu ý**: Đọc thêm `.cursor/PROJECT.md` và `.cursor/ARCHITECTURE.md` để hiểu rõ cấu trúc dự án.
+> **Bắt buộc đọc**: `.cursor/PROJECT.md` và `.cursor/ARCHITECTURE.md` để hiểu cấu trúc dự án.
 
-## 1️⃣ Quy tắc chung
+---
 
-**Quy tắc quan trọng nhất**: Code phải dễ hiểu nhất có thể, siêu ngắn gọn, không phức tạp, clean code, không lồng code quá nhiều, không props quá 3 phần từ.
+## 🗂️ Cấu trúc dự án
 
-**Tách biệt logic**: Mỗi component phải tự quản lý logic riêng. Ví dụ: mô tả khóa học có nhiều API (thông tin khóa học, giảng viên, giá, khuyến mãi...) → không để logic ở file index chính, mà tách ra xử lý riêng. Ví dụ: `InfoLecturer.tsx` sẽ có fetch riêng, useEffect riêng, state riêng và không cần truyền qua props.
+```
+notebook_fe/
+├── app/                          # Next.js App Router
+│   ├── (main)/                   # Layout chính
+│   │   ├── (admin)/              # Routes admin (/admin/*)
+│   │   ├── (user)/               # Routes user (/notebook/*, /profile/*)
+│   │   ├── (workspace)/          # Routes workspace (/w/*)
+│   │   └── (share)/              # Routes public share
+│   ├── api/                      # API routes (Next.js)
+│   ├── globals.css               # Global styles
+│   ├── layout.tsx                # Root layout
+│   └── loading.tsx               # Global loading
+│
+├── components/                   # React Components
+│   ├── admin/                    # Admin components
+│   │   ├── dashboard/            # Dashboard
+│   │   ├── notebooks/            # Quản lý notebooks
+│   │   ├── org-units/            # Quản lý đơn vị
+│   │   ├── users/                # Quản lý users
+│   │   └── shared/               # Shared admin components
+│   │
+│   ├── user/                     # User components
+│   │   ├── notebook/             # Notebook workspace
+│   │   │   ├── workspace/        # Editor, AI features, Chat
+│   │   │   ├── available/        # Community notebooks
+│   │   │   └── my-personal-groups/
+│   │   └── notifications/        # Notifications
+│   │
+│   ├── shared/                   # Shared components
+│   └── ui/                       # shadcn/ui components
+│
+├── api/                          # API utilities
+│   ├── client/                   # Client-side (axios)
+│   └── server/                   # Server-side (fetch)
+│
+├── types/                        # TypeScript types
+│   ├── admin/                    # Admin types
+│   ├── user/                     # User types
+│   └── shared/                   # Shared types
+│
+├── stores/                       # Zustand stores
+├── hooks/                        # Custom hooks
+├── lib/                          # Utilities
+└── provider/                     # Context providers
+```
 
-**Nguyên tắc**: Logic code phải đơn giản nhất có thể nhưng vẫn đầy đủ chức năng.
+---
 
-Tuân thủ tuyệt đối cấu trúc & phong cách của dự án "NoteBooks".
+## 🔌 Cách gọi API
 
-Giao diện phải tối giản, dễ hiểu, UX/UI mượt mà, gọn gàng.
+### Sơ đồ luồng dữ liệu
 
-Ưu tiên hiệu năng và khả năng bảo trì — code ngắn, dễ đọc, dễ hiểu, không "kiến trúc rối".
+```mermaid
+flowchart LR
+    subgraph Frontend["Frontend (Next.js)"]
+        CC["Client Component"]
+        SC["Server Component"]
+    end
+    
+    subgraph API["API Layer"]
+        AX["axios (client)"]
+        FT["fetcher (server)"]
+    end
+    
+    subgraph Backend["Backend (Spring Boot)"]
+        BE["REST API"]
+    end
+    
+    CC -->|useEffect + fetch| AX
+    SC -->|Server Action| FT
+    AX -->|withCredentials| BE
+    FT -->|Cookie AUTH-TOKEN| BE
+```
 
-## 2️⃣ Về code
+### 📍 Client-side API (Dùng trong `"use client"`)
 
-**Framework**: Next.js (App Router) 16, React 19, TailwindCSS, shadcn/ui.
+```tsx
+import api from "@/api/client/axios";
 
-Luôn cập nhật công nghệ và rules mới cho Next.js 16.
+// ✅ Pattern chuẩn: Component tự fetch trong useEffect
+export default function MyComponent() {
+  const [data, setData] = useState<MyType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-**UI Components**: **BẮT BUỘC sử dụng shadcn/ui 100%** làm giao diện chủ đạo.
+  useEffect(() => {
+    loadData();
+  }, []);
 
-- Tất cả component UI phải dùng từ shadcn/ui
-- Nếu cần customize, copy component vào `components/ui/` và chỉnh sửa
-- Không tự tạo component UI từ đầu khi đã có trong shadcn/ui
-- Kiểm tra shadcn/ui docs trước khi code bất kỳ component UI nào
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get<MyType>("/user/endpoint");
+      setData(response.data);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Không thể tải dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-Không dùng i18n, redux, context nặng nề, hoặc cấu hình tailwind phức tạp.
+  if (isLoading) return <Skeleton />;
+  return <div>{data?.name}</div>;
+}
+```
 
-Mọi fetch API gọi trực tiếp trong component (client hoặc server component đều được).
+### 📍 Server-side API (Dùng trong Server Component)
 
-Không chia file API riêng trừ khi cần reuse nhiều lần.
+```tsx
+import { fetcher } from "@/api/server/fetcher";
+import { cookies } from "next/headers";
 
-Không viết HOC, custom hook phức tạp, không wrapper vô nghĩa.
+// Server Component
+export default async function Page() {
+  const cookieStore = await cookies();
+  const res = await fetcher<MyType>("/user/endpoint", cookieStore);
+  const data = await res.json();
+  
+  return <div>{data.name}</div>;
+}
+```
 
-## 3️⃣ UI/UX
+---
 
-**Giao diện chủ đạo**: shadcn/ui 100% — mọi component UI phải từ shadcn/ui.
+## 🖥️ Server Component Rules
 
-Giao diện phải nhẹ, sạch, dễ hiểu, phản hồi nhanh.
+### Khi nào dùng Server Component?
 
-Ưu tiên trải nghiệm người dùng thật (tối ưu tab, focus, hover, loading, skeleton).
+| Dùng Server Component | Dùng Client Component |
+|----------------------|----------------------|
+| Fetch data ban đầu (layout, metadata) | Interactivity (click, input, form) |
+| Không cần state/effect | Cần useState, useEffect |
+| SEO-critical content | Real-time updates |
+| Sensitive data (tokens) | Browser APIs |
 
-Mỗi component làm 1 nhiệm vụ duy nhất, đặt tên rõ ràng.
+### Pattern 1: Layout với Server Fetch
 
-Không lạm dụng animation.
+```tsx
+// app/(main)/(admin)/admin/layout.tsx
+import { cookies } from "next/headers";
+import { getServerCookie } from "@/api/server/cookieStore";
+import { fetcher } from "@/api/server/fetcher";
 
-Responsive bắt buộc (mobile-first).
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const stores = await cookies();
+  const accessToken = getServerCookie(stores, "AUTH-TOKEN");
+  
+  // Fetch data cần thiết cho layout
+  let notifications: NotificationsPagedResponse | null = null;
+  if (accessToken) {
+    const res = await fetcher("/notifications?page=0&size=20", stores);
+    if (res.ok) {
+      notifications = await res.json();
+    }
+  }
 
-## 4️⃣ Màu sắc & style
+  return (
+    <div className="min-h-screen">
+      <Sidebar />
+      <main>{children}</main>
+    </div>
+  );
+}
+```
 
-**Màu chủ đạo**: Đen trắng (black/white/gray scale) — toàn hệ thống chỉ dùng palette đen trắng xám.
+### Pattern 2: Page với Dynamic Params
 
-**Ngoại lệ**:
+```tsx
+// app/(main)/(admin)/admin/users/[id]/page.tsx
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-- Red cho xóa, hành động nguy hiểm
-- Yellow cho cảnh báo
+export default async function UserDetailPage({ params }: PageProps) {
+  const { id } = await params;  // ⚠️ Next.js 15+: params là Promise
+  return <UserDetail userId={id} />;
+}
+```
 
-**Shadcn/UI**: Sử dụng theme mặc định của shadcn/ui (dark/light mode), customize màu theo palette đen trắng.
+### Pattern 3: Page với Metadata
 
-**Styling**: Chỉ TailwindCSS, không thêm CSS riêng, không SCSS.
+```tsx
+// app/(main)/(user)/notebook/[id]/page.tsx
+import type { Metadata } from "next";
 
-## 5️⃣ Code rule
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-Tên file: `kebab-case.tsx`.
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  return {
+    title: `Chi tiết Notebook`,
+    description: "Xem thông tin chi tiết notebook",
+  };
+}
 
-Component: `PascalCase`.
+export default async function NotebookDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  return <NotebookDetail notebookId={id} />;
+}
+```
 
-Hook: `useXxx`.
+### Pattern 4: Page cần Access Token
 
-Không dùng `any` trừ khi thật cần.
+```tsx
+// app/(main)/(workspace)/notebook/[id]/workspace/page.tsx
+import { cookies } from "next/headers";
+import { getServerCookie } from "@/api/server/cookieStore";
 
-Luôn viết type rõ ràng (interface, type).
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-Mỗi component ≤ 150 dòng.
+export default async function WorkspacePage({ params }: PageProps) {
+  const { id } = await params;
+  const stores = await cookies();
+  const accessToken = getServerCookie(stores, "AUTH-TOKEN");
 
-## 6️⃣ Hiệu năng
+  return (
+    <NotebookWorkspace 
+      notebookId={id} 
+      accessToken={accessToken || undefined} 
+    />
+  );
+}
+```
 
-Dùng server component mặc định, chỉ `"use client"` khi cần interactivity.
+### ⚠️ Lưu ý quan trọng
 
-Dùng React.Suspense hoặc loading skeleton khi fetch chậm.
+| Rule | Chi tiết |
+|------|----------|
+| `params` là Promise | Next.js 15+: phải `await params` trước khi dùng |
+| `cookies()` là async | Next.js 15+: phải `await cookies()` |
+| Không dùng hooks | Server Component không có useState, useEffect |
+| Truyền data xuống | Fetch ở server, truyền props xuống client component |
 
-Giảm số render, không re-render vô lý.
+### Sơ đồ quyết định: Server vs Client
 
-Không thêm thư viện nặng (moment, lodash, axios...). Dùng native fetch.
+```mermaid
+flowchart TD
+    A[Cần render component] --> B{Cần interactivity?}
+    B -->|Có| C[Client Component]
+    B -->|Không| D{Cần fetch sensitive data?}
+    D -->|Có| E[Server Component]
+    D -->|Không| F{Component đơn giản?}
+    F -->|Có| G[Server Component]
+    F -->|Không| C
+    
+    C --> H["'use client'"]
+    E --> I["async function + await cookies()"]
+    G --> I
+```
 
-## 7️⃣ Cấm tuyệt đối
+---
 
-🚫 CSS thuần, SCSS, styled-components  
-🚫 next-intl, i18n  
-🚫 Redux, Recoil, Context lồng phức tạp  
-🚫 Màu khác ngoài đen/trắng/xám/red/yellow  
-🚫 Abstraction code khó đọc  
-🚫 **Tự tạo component UI từ đầu — BẮT BUỘC dùng shadcn/ui**  
-🚫 Sử dụng UI library khác ngoài shadcn/ui
-🚫 Sử dụng bóng đổ mạnh, gần như không dùng hiệu ứng bóng đổ
-🚫 Để phần interface api trong component
-## Tóm tắt
+## 🔄 API Patterns
 
-"Code phải đơn giản, đen trắng, dễ hiểu, hiệu năng cao.  
-**UI 100% shadcn/ui**, UX mượt, không màu mè, không cấu hình rối."
+### Pattern 1: List với Pagination + Filter
+
+```tsx
+export default function ListComponent() {
+  const [data, setData] = useState<PagedResponse<T> | null>(null);
+  const [page, setPage] = useState(0);
+  const [q, setQ] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  useEffect(() => {
+    loadData();
+  }, [page, q, sortBy, sortDir]);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: "10",
+        sortBy,
+        sortDir,
+        ...(q && { q }),
+      });
+      const response = await api.get<PagedResponse<T>>(`/endpoint?${params}`);
+      setData(response.data);
+    } catch (error) {
+      toast.error("Không thể tải dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ... render
+}
+```
+
+### Pattern 2: Detail với ID
+
+```tsx
+export default function DetailComponent({ id }: { id: string }) {
+  const [data, setData] = useState<DetailType | null>(null);
+
+  useEffect(() => {
+    const loadDetail = async () => {
+      try {
+        const response = await api.get<DetailType>(`/endpoint/${id}`);
+        setData(response.data);
+      } catch (error) {
+        toast.error("Không thể tải thông tin");
+      }
+    };
+    loadDetail();
+  }, [id]);
+
+  // ... render
+}
+```
+
+### Pattern 3: Create/Update Form
+
+```tsx
+export default function FormComponent() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await api.post("/endpoint", formData);
+      toast.success("Tạo thành công");
+      router.push("/list");
+    } catch (error) {
+      toast.error("Không thể tạo");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ... render form
+}
+```
+
+---
+
+## ⚡ Nguyên tắc cốt lõi
+
+| # | Quy tắc | Mô tả |
+|---|---------|-------|
+| 1 | **Đơn giản là vua** | Code phải dễ hiểu nhất có thể, không phức tạp, không over-engineer |
+| 2 | **Tự quản lý logic** | Mỗi component tự fetch, tự quản state, không truyền props lung tung |
+| 3 | **Props tối đa 3** | Không bao giờ truyền quá 3 props vào component |
+| 4 | **Component ≤ 150 dòng** | Nếu dài hơn → tách ngay |
+
+---
+
+## 🛠️ Tech Stack
+
+| Công nghệ | Version | Ghi chú |
+|-----------|---------|---------|
+| Next.js | 16+ | App Router only |
+| React | 19+ | Server Component ưu tiên |
+| TailwindCSS | Latest | Không config phức tạp |
+| shadcn/ui | Latest | **UI library duy nhất** |
+
+---
+
+## 🎨 UI/UX Rules
+
+### ✅ BẮT BUỘC
+
+```
+shadcn/ui = 100% UI components
+```
+
+- **Tất cả** component UI phải từ shadcn/ui
+- Nếu cần customize → copy vào `components/ui/` và chỉnh sửa
+- Kiểm tra shadcn/ui docs **TRƯỚC** khi code
+
+---
+
+## ✨ DESIGN EXCELLENCE — Giao diện phải SIÊU ĐẸP
+
+> ⚠️ **QUAN TRỌNG**: Giao diện phải đạt chuẩn như các web nổi tiếng dùng shadcn/ui: **Vercel, Cal.com, Resend, Dub.co, Supabase Dashboard**
+
+### 🎯 Tiêu chuẩn thiết kế
+
+| Tiêu chí | Yêu cầu |
+|----------|---------|
+| **First Impression** | User phải "WOW" ngay lần đầu nhìn thấy |
+| **Premium Feel** | Giao diện phải có cảm giác cao cấp, professional |
+| **Attention to Detail** | Từng pixel phải được chăm chút |
+| **Consistency** | Nhất quán xuyên suốt toàn bộ app |
+
+### 🖌️ Visual Design Principles
+
+```
+1. SPACING — Generous whitespace, không chật chội
+2. TYPOGRAPHY — Font hierarchy rõ ràng, readable
+3. CONTRAST — Đủ contrast để dễ đọc
+4. BALANCE — Layout cân đối, không lệch
+5. RHYTHM — Consistent spacing system (4px, 8px, 12px, 16px, 24px, 32px, 48px)
+```
+
+### 💎 Premium UI Patterns
+
+| Pattern | Cách dùng |
+|---------|-----------|
+| **Subtle borders** | `border-border/50` hoặc `border-muted` — không border quá đậm |
+| **Soft backgrounds** | `bg-muted/50`, `bg-accent/5` — nền nhẹ nhàng |
+| **Smooth transitions** | `transition-all duration-200` — mượt mà |
+| **Micro-interactions** | Hover states tinh tế, không quá lố |
+| **Glass morphism** | `backdrop-blur-sm bg-background/80` khi cần |
+| **Rounded corners** | Consistent radius: `rounded-lg` hoặc `rounded-xl` |
+
+### 🌗 Dark Mode Excellence
+
+- Dark mode phải **đẹp như light mode**, không chỉ "đổi màu"
+- Màu nền tối: `hsl(0 0% 3.9%)` hoặc gần đó — không đen tuyệt đối
+- Contrast phải đủ nhưng không chói mắt
+- Borders và dividers phải nhìn rõ nhưng subtle
+
+### 📐 Layout & Spacing
+
+```tsx
+// ✅ ĐÚNG — Generous spacing
+<div className="space-y-6 p-6">
+  <Card className="p-6">
+    <CardHeader className="pb-4">...</CardHeader>
+    <CardContent className="space-y-4">...</CardContent>
+  </Card>
+</div>
+
+// ❌ SAI — Chật chội
+<div className="space-y-2 p-2">
+  <Card className="p-2">...</Card>
+</div>
+```
+
+### 🔤 Typography
+
+| Element | Class | Size |
+|---------|-------|------|
+| Page title | `text-3xl font-bold tracking-tight` | 30px |
+| Section title | `text-xl font-semibold` | 20px |
+| Card title | `text-lg font-medium` | 18px |
+| Body | `text-sm text-muted-foreground` | 14px |
+| Caption | `text-xs text-muted-foreground` | 12px |
+
+### 🎭 States & Feedback
+
+| State | Styling |
+|-------|---------|
+| Hover | Subtle background change, smooth transition |
+| Focus | Clear focus ring, accessible |
+| Active | Slightly pressed effect |
+| Loading | Skeleton hoặc spinner, không để trống |
+| Empty | Friendly empty state với icon + message |
+| Error | Red accent, clear error message |
+
+### 🖼️ Lấy cảm hứng từ
+
+- **Vercel Dashboard** — Clean, minimal, professional
+- **Cal.com** — Modern scheduling UI
+- **Resend** — Email platform với UI tinh tế
+- **Dub.co** — Link management với dark mode đẹp
+- **Linear** — Issue tracking với attention to detail
+- **Raycast** — Command palette experience
+
+---
+
+## 🎨 Màu sắc
+
+| Màu | Sử dụng |
+|-----|---------|
+| `black/white/gray` | Màu chủ đạo — **DUY NHẤT** |
+| `red` | Xóa, hành động nguy hiểm |
+| `yellow` | Cảnh báo |
+
+> ⚠️ **KHÔNG** dùng bất kỳ màu nào khác. Không xanh, không tím, không gradient màu mè.
+
+### 🖼️ Style
+
+- **Giao diện**: Premium, polished, professional
+- **Responsive**: Mobile-first — bắt buộc
+- **Animation**: Subtle, purposeful — không lố
+- **Shadow**: Rất nhẹ nếu cần, tránh shadow nặng
+- **Focus/Hover**: Phải có feedback rõ ràng, mượt mà
+
+---
+
+## 📝 Coding Standards
+
+### Naming Convention
+
+| Loại | Format | Ví dụ |
+|------|--------|-------|
+| File | `kebab-case.tsx` | `user-profile.tsx` |
+| Component | `PascalCase` | `UserProfile` |
+| Hook | `useXxx` | `useAuth` |
+| Type/Interface | `PascalCase` | `UserData` |
+| Constant | `UPPER_SNAKE_CASE` | `API_BASE_URL` |
+
+### TypeScript
+
+```typescript
+// ✅ ĐÚNG — Interface trong cùng file component
+interface UserResponse {
+  id: string;
+  fullName: string;
+  email: string;
+}
+
+export default function UserProfile() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  // ...
+}
+
+// ❌ SAI - không dùng any
+const data: any = fetchData();
+```
+
+- **Luôn** định nghĩa type rõ ràng
+- **Không** dùng `any` trừ khi bất khả kháng
+- **Interface riêng** cho API response — đặt trong cùng file component, không tách file riêng
+
+---
+
+## 📦 Component Structure
+
+### Đúng cách
+
+```tsx
+// ✅ Component tự quản lý logic
+export default function CourseInfo() {
+  const [course, setCourse] = useState<Course | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await api.get<Course>("/course");
+        setCourse(res.data);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+  
+  if (isLoading) return <Skeleton />;
+  return <div>{course?.title}</div>;
+}
+```
+
+### Sai cách
+
+```tsx
+// ❌ Logic ở parent, truyền props xuống
+export function Parent() {
+  const [course, setCourse] = useState<Course | null>(null);
+  const [lecturer, setLecturer] = useState<Lecturer | null>(null);
+  const [discount, setDiscount] = useState<Discount | null>(null);
+  // ... nhiều state ở đây
+  
+  return (
+    <CourseInfo 
+      course={course} 
+      lecturer={lecturer} 
+      discount={discount}
+      // ... quá nhiều props ❌
+    />
+  );
+}
+```
+
+---
+
+## 🚀 Performance
+
+| Rule | Chi tiết |
+|------|----------|
+| Server Component | Mặc định, chỉ `"use client"` khi cần interactivity |
+| Loading | Dùng `Suspense` + `Skeleton` cho fetch chậm |
+| Re-render | Tối thiểu hóa, không re-render vô nghĩa |
+| Libraries | Không thêm lib nặng (moment, lodash, axios...). Dùng native fetch cho server |
+
+---
+
+## 🚫 CẤM TUYỆT ĐỐI
+
+| ❌ Cấm | Lý do |
+|--------|-------|
+| CSS thuần, SCSS, styled-components | Chỉ dùng TailwindCSS |
+| next-intl, i18n | Không cần đa ngôn ngữ |
+| Redux, Recoil, Context phức tạp | State đơn giản, local |
+| Màu khác ngoài đen/trắng/xám/red/yellow | Tuân thủ design system |
+| HOC, wrapper vô nghĩa | Giữ code đơn giản |
+| Tự tạo UI component từ đầu | shadcn/ui only |
+| UI library khác (MUI, Ant, Chakra) | shadcn/ui only |
+| Shadow nặng | Thiết kế flat/subtle |
+| Tách file API riêng | Fetch trực tiếp trong component |
+| Props > 3 | Tách component |
+| Giao diện xấu, lười thiết kế | **KHÔNG CHẤP NHẬN** |
+
+---
+
+## 📋 Checklist trước khi commit
+
+### Code Quality
+- [ ] Code ≤ 150 dòng mỗi component
+- [ ] Props ≤ 3 mỗi component  
+- [ ] Không có `any` trong TypeScript
+- [ ] Loading state có skeleton
+- [ ] Không import lib nặng
+- [ ] Interface đặt trong cùng file component
+
+### Design Quality
+- [ ] Giao diện đẹp như Vercel/Cal.com level
+- [ ] Spacing generous, không chật
+- [ ] Typography hierarchy rõ ràng
+- [ ] Hover/focus states smooth
+- [ ] Dark mode đẹp như light mode
+- [ ] Responsive hoạt động
+- [ ] Chỉ dùng màu đen/trắng/xám (+ red/yellow khi cần)
+- [ ] UI 100% từ shadcn/ui
+
+---
+
+## 💡 Tóm tắt
+
+> **"Đơn giản. Đen trắng. shadcn/ui. Premium như Vercel."**
+
+```
+Code = Simple, Clean, Maintainable
+UI = Beautiful, Polished, Professional
+UX = Fast, Smooth, Delightful
+```

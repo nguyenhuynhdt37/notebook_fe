@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import NotebookTabs from "@/components/user/notebook";
+import NotebookTabs from "@/components/users/notebook";
 
 export const metadata: Metadata = {
   title: "Notebooks",
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     "chia sẻ kiến thức",
   ],
   openGraph: {
-    title: "Notebooks - Notebooks AI",
-    description: "Khám phá và quản lý các nhóm notebook trên Notebooks AI.",
+    title: "Notebooks - EduGenius",
+    description: "Khám phá và quản lý các nhóm notebook trên EduGenius.",
     type: "website",
   },
 };

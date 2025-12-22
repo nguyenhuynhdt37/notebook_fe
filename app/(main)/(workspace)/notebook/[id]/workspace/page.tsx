@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getServerCookie } from "@/api/server/cookieStore";
-import NotebookWorkspace from "@/components/user/notebook/workspace";
+import NotebookWorkspace from "@/components/users/notebook/workspace";
 
 interface NotebookWorkspacePageProps {
   params: Promise<{ id: string }>;
@@ -13,7 +13,7 @@ export async function generateMetadata({
   const { id } = await params;
   return {
     title: `Workspace - Nhóm cộng đồng`,
-    description: "Chat và tương tác với nhóm cộng đồng trên Notebooks AI.",
+    description: "Chat và tương tác với nhóm cộng đồng trên EduGenius.",
   };
 }
 

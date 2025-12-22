@@ -9,15 +9,15 @@ export default function ShareHeader() {
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
               <Image
-                src="/logo/notebooks-logo.svg"
-                alt="Notebooks AI"
+                src="/logo/vinh-university-logo.png"
+                alt="EduGenius"
                 width={32}
                 height={32}
                 className="text-foreground group-hover:opacity-80 transition-opacity"
               />
             </div>
             <span className="text-lg font-bold text-foreground tracking-tight">
-              Notebooks AI
+              EduGenius
             </span>
           </Link>
         </div>

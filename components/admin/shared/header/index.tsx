@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import NotificationDropdown from "@/components/user/shared/header/notification-dropdown";
+import NotificationDropdown from "@/components/users/shared/header/notification-dropdown";
 
 export default function AdminHeader() {
   const router = useRouter();
@@ -40,8 +40,8 @@ export default function AdminHeader() {
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-3">
             <Image
-              src="/logo/notebooks-logo.svg"
-              alt="Notebooks AI"
+              src="/logo/vinh-university-logo.png"
+              alt="EduGenius"
               width={32}
               height={32}
               className="text-foreground"
