@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  Mail,
+  Lock,
+  ArrowRight,
+  Sparkles,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import api from "@/api/client/axios";
@@ -29,6 +37,7 @@ export default function Login() {
   const setUser = useUserStore((state) => state.setUser);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -179,14 +188,28 @@ export default function Login() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Nhập mật khẩu"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isLoading}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
 

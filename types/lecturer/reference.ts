@@ -90,6 +90,15 @@ export interface LecturerClassResponse {
   studentCount: number;
   createdAt: string;
   updatedAt: string;
+  assignmentId: string | null;
+  assignmentStatus: string | null;
+  fileCount: number;
+  quizCount: number;
+  flashcardCount: number;
+  summaryCount: number;
+  videoCount: number;
+  notebookId: string | null;
+  notebookTitle: string | null;
 }
 
 export interface LecturerClassPagedResponse {
