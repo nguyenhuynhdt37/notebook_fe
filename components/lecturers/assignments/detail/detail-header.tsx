@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -28,6 +29,7 @@ interface DetailHeaderProps {
 }
 
 export default function DetailHeader({ data }: DetailHeaderProps) {
+  const router = useRouter();
   const statusLabel =
     APPROVAL_STATUS_LABELS[data.approvalStatus] || "Chờ duyệt";
   const statusVariant =
@@ -50,10 +52,13 @@ export default function DetailHeader({ data }: DetailHeaderProps) {
 
       <div className="relative flex items-start gap-4">
         {/* Back button */}
-        <Button variant="ghost" size="icon" asChild className="shrink-0">
-          <Link href="/lecturer/assignments">
-            <ArrowLeft className="size-5" />
-          </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.back()}
+          className="shrink-0"
+        >
+          <ArrowLeft className="size-5" />
         </Button>
 
         {/* Main content */}

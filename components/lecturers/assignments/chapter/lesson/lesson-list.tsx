@@ -7,41 +7,28 @@ import { Plus, FileText } from "lucide-react";
 import api from "@/api/client/axios";
 import { ChapterItem } from "@/types/lecturer/chapter";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import LessonItem from "./lesson-item";
 
 interface LessonListProps {
   chapterId: string;
   assignmentId: string;
+  items: ChapterItem[];
+  onItemsChange?: () => void;
 }
 
 export default function LessonList({
   chapterId,
   assignmentId,
+  items: initialItems,
+  onItemsChange,
 }: LessonListProps) {
   const router = useRouter();
-  const [items, setItems] = useState<ChapterItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [items, setItems] = useState<ChapterItem[]>(initialItems);
 
+  // Sync with parent when items prop changes
   useEffect(() => {
-    loadItems();
-  }, [chapterId]);
-
-  const loadItems = async () => {
-    setIsLoading(true);
-    try {
-      const res = await api.get<ChapterItem[]>(
-        `/lecturer/chapters/${chapterId}/items`
-      );
-      const sorted = [...res.data].sort((a, b) => a.sortOrder - b.sortOrder);
-      setItems(sorted);
-    } catch (error) {
-      console.error(error);
-      toast.error("Không thể tải danh sách bài học");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setItems(initialItems);
+  }, [initialItems]);
 
   const handleDelete = async (itemId: string) => {
     if (!confirm("Bạn có chắc muốn xóa bài học này?")) return;
@@ -52,6 +39,7 @@ export default function LessonList({
     try {
       await api.delete(`/lecturer/chapter-items/${itemId}`);
       toast.success("Đã xóa bài học");
+      onItemsChange?.(); // Notify parent to reload
     } catch (error) {
       toast.error("Không thể xóa bài học");
       setItems(previousItems);
@@ -63,16 +51,6 @@ export default function LessonList({
       `/lecturer/assignments/${assignmentId}/chapters/${chapterId}/lessons/create`
     );
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-lg" />
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-3">

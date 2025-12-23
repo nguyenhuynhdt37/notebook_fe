@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Layers, Users, FileText } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ interface AssignmentDetailProps {
 export default function AssignmentDetail({
   assignmentId,
 }: AssignmentDetailProps) {
+  const router = useRouter();
   const [data, setData] = useState<LecturerAssignmentResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,9 +57,7 @@ export default function AssignmentDetail({
         <p className="text-muted-foreground mb-6">
           Môn học này không tồn tại hoặc bạn không có quyền truy cập.
         </p>
-        <Button asChild>
-          <Link href="/lecturer/assignments">Quay lại danh sách</Link>
-        </Button>
+        <Button onClick={() => router.back()}>Quay lại</Button>
       </div>
     );
   }

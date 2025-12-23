@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StudentList from "./student-list";
@@ -12,14 +12,13 @@ interface AssignmentStudentsProps {
 export default function AssignmentStudents({
   assignmentId,
 }: AssignmentStudentsProps) {
+  const router = useRouter();
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href={`/lecturer/assignments/${assignmentId}`}>
-            <ArrowLeft className="size-5" />
-          </Link>
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="size-5" />
         </Button>
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-foreground text-background">

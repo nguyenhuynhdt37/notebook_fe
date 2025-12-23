@@ -26,6 +26,7 @@ interface ChapterDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (updatedChapter: Chapter) => void;
+  onReload?: () => void;
 }
 
 export function ChapterDetailDialog({
@@ -34,6 +35,7 @@ export function ChapterDetailDialog({
   isOpen,
   onClose,
   onUpdate,
+  onReload,
 }: ChapterDetailDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -115,7 +117,12 @@ export function ChapterDetailDialog({
           {/* Lessons / Items */}
           <div className="space-y-2">
             <Label>Nội dung bài học</Label>
-            <LessonList chapterId={chapter.id} assignmentId={assignmentId} />
+            <LessonList
+              chapterId={chapter.id}
+              assignmentId={assignmentId}
+              items={chapter.items || []}
+              onItemsChange={onReload}
+            />
           </div>
         </div>
 
