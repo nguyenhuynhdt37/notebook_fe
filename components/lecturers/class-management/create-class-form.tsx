@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import FileUploadZone from "./file-upload-zone";
+import LecturerSubjectSelect from "@/components/lecturers/shared/lecturer-subject-select";
+import LecturerAssignmentSelect from "@/components/lecturers/shared/lecturer-assignment-select";
 
 interface CreateClassFormProps {
   onPreview: (data: any, formData: any) => void;
@@ -102,31 +103,20 @@ export default function CreateClassForm({ onPreview }: CreateClassFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="subject">Môn học *</Label>
-            <Select value={subjectId} onValueChange={setSubjectId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn môn học" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="java-basic">Lập trình Java cơ bản</SelectItem>
-                <SelectItem value="web-dev">Phát triển Web</SelectItem>
-                <SelectItem value="database">Cơ sở dữ liệu</SelectItem>
-                <SelectItem value="algorithms">Thuật toán và cấu trúc dữ liệu</SelectItem>
-              </SelectContent>
-            </Select>
+            <LecturerSubjectSelect
+              value={subjectId || null}
+              onChange={(value) => setSubjectId(value || "")}
+              placeholder="Chọn môn học"
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="assignment">Phân công giảng dạy *</Label>
-            <Select value={teachingAssignmentId} onValueChange={setTeachingAssignmentId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn phân công giảng dạy" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="assignment-1">Học kỳ 1 - 2024-2025</SelectItem>
-                <SelectItem value="assignment-2">Học kỳ 2 - 2024-2025</SelectItem>
-                <SelectItem value="assignment-3">Học kỳ hè - 2024-2025</SelectItem>
-              </SelectContent>
-            </Select>
+            <LecturerAssignmentSelect
+              value={teachingAssignmentId || null}
+              onChange={(value) => setTeachingAssignmentId(value || "")}
+              placeholder="Chọn phân công giảng dạy"
+            />
           </div>
         </CardContent>
       </Card>

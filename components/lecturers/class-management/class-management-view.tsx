@@ -7,9 +7,12 @@ import { FileSpreadsheet, Users, Plus, TrendingUp, BookOpen, UserCheck } from "l
 import CreateClassFlow from "./create-class-flow";
 import ImportStudentsFlow from "./import-students-flow";
 import StatsCard from "./stats-card";
+import RecentActivity from "./recent-activity";
+import { useClassStats } from "./use-class-stats";
 
 export default function ClassManagementView() {
   const [activeFlow, setActiveFlow] = useState<"create" | "import" | null>(null);
+  const stats = useClassStats();
 
   if (activeFlow === "create") {
     return <CreateClassFlow onBack={() => setActiveFlow(null)} />;
@@ -91,43 +94,29 @@ export default function ClassManagementView() {
       <div className="grid gap-4 md:grid-cols-3">
         <StatsCard
           title="Lớp đã tạo hôm nay"
-          value={0}
-          description="Tăng 0% so với hôm qua"
+          value={stats.isLoading ? "..." : stats.classesToday}
+          description={stats.classesToday > 0 ? `+${stats.classesToday} lớp mới` : "Chưa có lớp mới hôm nay"}
           icon={Plus}
           color="default"
         />
         <StatsCard
           title="Sinh viên đã import"
-          value={0}
+          value={stats.isLoading ? "..." : stats.totalStudents}
           description="Tổng số sinh viên trong tất cả lớp"
           icon={UserCheck}
           color="blue"
         />
         <StatsCard
           title="Lớp đang hoạt động"
-          value={0}
-          description="Lớp có sinh viên đang học"
+          value={stats.isLoading ? "..." : stats.activeClasses}
+          description={`Trên tổng ${stats.totalClasses} lớp`}
           icon={BookOpen}
           color="green"
         />
       </div>
 
       {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <TrendingUp className="h-5 w-5 mr-2" />
-            Hoạt động gần đây
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Chưa có hoạt động nào</p>
-            <p className="text-sm">Tạo lớp đầu tiên để bắt đầu</p>
-          </div>
-        </CardContent>
-      </Card>
+      <RecentActivity />
     </div>
   );
 }

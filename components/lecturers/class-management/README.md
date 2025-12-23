@@ -92,15 +92,17 @@ interface StudentImportResult {
 - [x] Error handling và toast notifications
 - [x] Responsive design
 - [x] Dark mode support
+- [x] **API Integration**: Thay thế mock data bằng API thật
+- [x] **Real-time Stats**: Thống kê từ dữ liệu thật
+- [x] **Recent Activity**: Hoạt động gần đây từ API
+- [x] **Dynamic Selects**: Subject và Assignment select từ API
 
 ### 🔄 Cần cải thiện
-- [ ] Kết nối API thật (hiện tại dùng mock data)
-- [ ] Authentication với X-User-Id header
-- [ ] Fetch danh sách subjects và teaching assignments
-- [ ] Fetch danh sách classes cho import
+- [ ] Authentication với X-User-Id header (hiện dùng mock)
 - [ ] Loading states cho API calls
 - [ ] Pagination cho preview table
 - [ ] Export kết quả import
+- [ ] Real-time updates khi có class mới
 
 ## Usage
 
