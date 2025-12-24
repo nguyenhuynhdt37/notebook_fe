@@ -640,6 +640,7 @@ export default function ChapterBoard({ courseId }: ChapterBoardProps) {
         isOpen={!!editingChapterDetails}
         onClose={() => setEditingChapterDetails(null)}
         onUpdate={handleChapterDetailsUpdated}
+        onReload={loadData}
       />
 
       <DeleteItemDialog

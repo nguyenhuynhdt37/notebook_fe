@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import api from "@/api/client/axios";
 import { ChapterItem, ChapterItemType } from "@/types/lecturer/chapter";
+import YoutubeUploadForm from "./youtube-upload-form";
 
 interface LessonCreateProps {
   assignmentId: string;
@@ -50,9 +51,9 @@ const LESSON_TYPES: {
   {
     type: "VIDEO",
     icon: Play,
-    label: "Video",
-    description: "Thêm video từ URL",
-    available: false,
+    label: "Video YouTube",
+    description: "Thêm video từ YouTube",
+    available: true,
   },
   {
     type: "QUIZ",
@@ -99,7 +100,7 @@ export default function LessonCreate({
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleBack = () => {
-    router.push(`/lecturer/assignments/${assignmentId}/chapters`);
+    router.back();
   };
 
   const handleFileSelect = (selectedFiles: FileList | null) => {
@@ -371,6 +372,15 @@ export default function LessonCreate({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Step 2: YouTube Form (VIDEO type) */}
+      {selectedType === "VIDEO" && (
+        <YoutubeUploadForm
+          chapterId={chapterId}
+          onBack={() => setSelectedType(null)}
+          onSuccess={handleBack}
+        />
       )}
     </div>
   );

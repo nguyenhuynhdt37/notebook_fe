@@ -33,7 +33,7 @@ export default function LecturerClassesView() {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="w-full sm:w-[200px]">
+          <div className="w-full">
             <LecturerTermSelect
               value={termId}
               onValueChange={(val) => {

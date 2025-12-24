@@ -22,7 +22,7 @@ export default function Terms() {
   const [data, setData] = useState<TermPagedResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [size] = useState(13);
+  const [size] = useState(11);
   const [q, setQ] = useState("");
   const [isActive, setIsActive] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");

@@ -69,10 +69,8 @@ export default function RequestTeachingForm() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/lecturer/assignments">
-            <ArrowLeft className="size-5" />
-          </Link>
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="size-5" />
         </Button>
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-foreground text-background">
@@ -164,8 +162,8 @@ export default function RequestTeachingForm() {
                 )}
                 Gửi yêu cầu
               </Button>
-              <Button variant="outline" asChild>
-                <Link href="/lecturer/assignments">Hủy</Link>
+              <Button variant="outline" onClick={() => router.back()}>
+                Hủy
               </Button>
             </div>
           </form>

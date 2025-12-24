@@ -26,6 +26,19 @@ export interface ChapterItemMetadata {
   [key: string]: unknown;
 }
 
+// YouTube Video types
+export interface VideoMetadata {
+  youtubeUrl: string;
+  videoId: string;
+  description?: string;
+}
+
+export interface ChapterYoutubeUploadRequest {
+  youtubeUrl: string;
+  title?: string;
+  description?: string;
+}
+
 export interface ChapterItem {
   id: string;
   itemType: ChapterItemType;
