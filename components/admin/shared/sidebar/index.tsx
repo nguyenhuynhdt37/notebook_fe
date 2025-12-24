@@ -14,6 +14,7 @@ import {
   Calendar,
   BookOpen,
   ClipboardList,
+  FileCheck2,
 } from "lucide-react";
 import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,11 @@ const menuItems = [
     title: "Phân công giảng dạy",
     href: "/admin/teaching-assignments",
     icon: ClipboardList,
+  },
+  {
+    title: "Quy chế & Công văn",
+    href: "/admin/regulation",
+    icon: FileCheck2,
   },
   {
     title: "Notebooks",
