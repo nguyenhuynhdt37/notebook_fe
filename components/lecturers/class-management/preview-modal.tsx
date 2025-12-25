@@ -3,27 +3,29 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
+import { useUserStore } from "@/stores/user";
 
 interface PreviewModalProps {
   data: {
     totalRows: number;
-    validRows: number;
-    errorRows: number;
-    errors: Array<{
+    successCount: number;
+    duplicateCount: number;
+    errorCount: number;
+    duplicates: Array<{
       rowNumber: number;
       studentCode: string;
       fullName: string;
       reason: string;
     }>;
-    students: Array<{
+    errors: Array<{
+      rowNumber: number;
       studentCode: string;
       fullName: string;
-      dateOfBirth: string;
+      reason: string;
     }>;
   };
   formData: {
@@ -38,10 +40,16 @@ interface PreviewModalProps {
 
 export default function PreviewModal({ data, formData, onBack, onConfirm }: PreviewModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const user = useUserStore((state) => state.user);
 
   const handleCreateClass = async () => {
     if (!formData.file) {
       toast.error("Không tìm thấy file Excel");
+      return;
+    }
+
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập để tiếp tục");
       return;
     }
 
@@ -56,11 +64,16 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
       const response = await api.post('/api/lecturer/class-management/create-with-students', submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-User-Id': 'lecturer-id', // TODO: Get from auth
+          'X-User-Id': user.id.toString(),
         },
       });
 
-      onConfirm(response.data);
+      // API trả về { success, message, data, error }
+      if (response.data.success && response.data.data) {
+        onConfirm(response.data.data);
+      } else {
+        toast.error(response.data.message || "Không thể tạo lớp học");
+      }
     } catch (error: any) {
       console.error('Create class error:', error);
       toast.error(error.response?.data?.message || "Không thể tạo lớp học");
@@ -78,7 +91,7 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
               <div>
-                <div className="text-2xl font-bold text-green-600">{data.validRows}</div>
+                <div className="text-2xl font-bold text-green-600">{data.successCount}</div>
                 <div className="text-sm text-muted-foreground">Hợp lệ</div>
               </div>
             </div>
@@ -90,7 +103,7 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
             <div className="flex items-center space-x-2">
               <XCircle className="h-5 w-5 text-red-600" />
               <div>
-                <div className="text-2xl font-bold text-red-600">{data.errorRows}</div>
+                <div className="text-2xl font-bold text-red-600">{data.errorCount}</div>
                 <div className="text-sm text-muted-foreground">Lỗi</div>
               </div>
             </div>
@@ -129,47 +142,48 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
         </CardContent>
       </Card>
 
-      {/* Preview Table */}
+      {/* Preview Summary */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Danh sách sinh viên</CardTitle>
+          <CardTitle className="text-lg">Tóm tắt dữ liệu sẽ tạo lớp</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">STT</TableHead>
-                  <TableHead>Mã SV</TableHead>
-                  <TableHead>Họ và tên</TableHead>
-                  <TableHead>Ngày sinh</TableHead>
-                  <TableHead className="w-24">Trạng thái</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.students.slice(0, 10).map((student, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-mono">{student.studentCode}</TableCell>
-                    <TableCell>{student.fullName}</TableCell>
-                    <TableCell>{student.dateOfBirth}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="text-green-600 bg-green-50">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Hợp lệ
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {data.students.length > 10 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                      ... và {data.students.length - 10} sinh viên khác
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-800 dark:text-green-400">
+                      {data.successCount} sinh viên hợp lệ
+                    </p>
+                    <p className="text-sm text-green-600">Sẽ được thêm vào lớp mới</p>
+                  </div>
+                </div>
+              </div>
+              
+              {data.duplicateCount > 0 && (
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    <div>
+                      <p className="font-medium text-yellow-800 dark:text-yellow-400">
+                        {data.duplicateCount} sinh viên trùng lặp
+                      </p>
+                      <p className="text-sm text-yellow-600">Trong file Excel</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {data.successCount === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <XCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+                <p>Không có sinh viên hợp lệ để tạo lớp</p>
+                <p className="text-sm">Vui lòng kiểm tra lại file Excel</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -205,10 +219,10 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
         </Button>
         <Button
           onClick={handleCreateClass}
-          disabled={isLoading || data.validRows === 0}
+          disabled={isLoading || data.successCount === 0}
           size="lg"
         >
-          {isLoading ? "Đang tạo lớp..." : `Tạo lớp với ${data.validRows} sinh viên`}
+          {isLoading ? "Đang tạo lớp..." : `Tạo lớp với ${data.successCount} sinh viên`}
         </Button>
       </div>
     </div>
