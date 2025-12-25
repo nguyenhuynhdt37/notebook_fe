@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -36,7 +43,12 @@ interface PreviewModalProps {
   onConfirm: (result: any) => void;
 }
 
-export default function PreviewModal({ data, formData, onBack, onConfirm }: PreviewModalProps) {
+export default function PreviewModal({
+  data,
+  formData,
+  onBack,
+  onConfirm,
+}: PreviewModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateClass = async () => {
@@ -48,21 +60,25 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
     setIsLoading(true);
     try {
       const submitData = new FormData();
-      submitData.append('excelFile', formData.file);
-      submitData.append('className', formData.className);
-      submitData.append('subjectId', formData.subjectId);
-      submitData.append('teachingAssignmentId', formData.teachingAssignmentId);
+      submitData.append("excelFile", formData.file);
+      submitData.append("className", formData.className);
+      submitData.append("subjectId", formData.subjectId);
+      submitData.append("teachingAssignmentId", formData.teachingAssignmentId);
 
-      const response = await api.post('/api/lecturer/class-management/create-with-students', submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-User-Id': 'lecturer-id', // TODO: Get from auth
-        },
-      });
+      const response = await api.post(
+        "/api/lecturer/class-management/create-with-students",
+        submitData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "X-User-Id": "lecturer-id", // TODO: Get from auth
+          },
+        }
+      );
 
       onConfirm(response.data);
     } catch (error: any) {
-      console.error('Create class error:', error);
+      console.error("Create class error:", error);
       toast.error(error.response?.data?.message || "Không thể tạo lớp học");
     } finally {
       setIsLoading(false);
@@ -78,7 +94,9 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
               <div>
-                <div className="text-2xl font-bold text-green-600">{data.validRows}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {data.validRows}
+                </div>
                 <div className="text-sm text-muted-foreground">Hợp lệ</div>
               </div>
             </div>
@@ -90,7 +108,9 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
             <div className="flex items-center space-x-2">
               <XCircle className="h-5 w-5 text-red-600" />
               <div>
-                <div className="text-2xl font-bold text-red-600">{data.errorRows}</div>
+                <div className="text-2xl font-bold text-red-600">
+                  {data.errorRows}
+                </div>
                 <div className="text-sm text-muted-foreground">Lỗi</div>
               </div>
             </div>
@@ -102,7 +122,9 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
             <div className="flex items-center space-x-2">
               <AlertTriangle className="h-5 w-5 text-blue-600" />
               <div>
-                <div className="text-2xl font-bold text-blue-600">{data.totalRows}</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {data.totalRows}
+                </div>
                 <div className="text-sm text-muted-foreground">Tổng số</div>
               </div>
             </div>
@@ -118,11 +140,15 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2">
             <div>
-              <span className="text-sm font-medium text-muted-foreground">Tên lớp:</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Tên lớp:
+              </span>
               <p className="font-medium">{formData.className}</p>
             </div>
             <div>
-              <span className="text-sm font-medium text-muted-foreground">Môn học:</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Môn học:
+              </span>
               <p className="font-medium">{formData.subjectId}</p>
             </div>
           </div>
@@ -147,24 +173,32 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.students.slice(0, 10).map((student, index) => (
+                {(data.students || []).slice(0, 10).map((student, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-mono">{student.studentCode}</TableCell>
+                    <TableCell className="font-mono">
+                      {student.studentCode}
+                    </TableCell>
                     <TableCell>{student.fullName}</TableCell>
                     <TableCell>{student.dateOfBirth}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="text-green-600 bg-green-50">
+                      <Badge
+                        variant="secondary"
+                        className="text-green-600 bg-green-50"
+                      >
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Hợp lệ
                       </Badge>
                     </TableCell>
                   </TableRow>
                 ))}
-                {data.students.length > 10 && (
+                {(data.students?.length || 0) > 10 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                      ... và {data.students.length - 10} sinh viên khác
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-muted-foreground"
+                    >
+                      ... và {(data.students?.length || 0) - 10} sinh viên khác
                     </TableCell>
                   </TableRow>
                 )}
@@ -175,19 +209,25 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
       </Card>
 
       {/* Errors */}
-      {data.errors.length > 0 && (
+      {(data.errors || []).length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg text-red-600">Danh sách lỗi</CardTitle>
+            <CardTitle className="text-lg text-red-600">
+              Danh sách lỗi
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {data.errors.map((error, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+              {(data.errors || []).map((error, index) => (
+                <div
+                  key={index}
+                  className="flex items-start space-x-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg"
+                >
                   <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">
-                      Dòng {error.rowNumber}: {error.studentCode} - {error.fullName}
+                      Dòng {error.rowNumber}: {error.studentCode} -{" "}
+                      {error.fullName}
                     </p>
                     <p className="text-xs text-red-600">{error.reason}</p>
                   </div>
@@ -208,7 +248,9 @@ export default function PreviewModal({ data, formData, onBack, onConfirm }: Prev
           disabled={isLoading || data.validRows === 0}
           size="lg"
         >
-          {isLoading ? "Đang tạo lớp..." : `Tạo lớp với ${data.validRows} sinh viên`}
+          {isLoading
+            ? "Đang tạo lớp..."
+            : `Tạo lớp với ${data.validRows} sinh viên`}
         </Button>
       </div>
     </div>
