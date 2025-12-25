@@ -14,25 +14,20 @@ interface ImportStudentsFlowProps {
 
 interface PreviewData {
   totalRows: number;
-  validRows: number;
-  errorRows: number;
-  duplicateRows: number;
-  errors: Array<{
-    rowNumber: number;
-    studentCode: string;
-    fullName: string;
-    reason: string;
-  }>;
+  successCount: number;
+  duplicateCount: number;
+  errorCount: number;
   duplicates: Array<{
     rowNumber: number;
     studentCode: string;
     fullName: string;
     reason: string;
   }>;
-  students: Array<{
+  errors: Array<{
+    rowNumber: number;
     studentCode: string;
     fullName: string;
-    dateOfBirth: string;
+    reason: string;
   }>;
 }
 
@@ -141,6 +136,7 @@ export default function ImportStudentsFlow({ onBack }: ImportStudentsFlowProps) 
       {step === "result" && resultData && (
         <ImportResult
           data={resultData}
+          type="import"
           onStartOver={handleStartOver}
           onViewClasses={onBack}
         />

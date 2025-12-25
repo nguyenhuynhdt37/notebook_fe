@@ -24,12 +24,20 @@ interface ImportResultProps {
       reason: string;
     }>;
   };
+  type?: "create" | "import"; // Thêm type để phân biệt luồng
   onStartOver: () => void;
   onViewClasses: () => void;
 }
 
-export default function ImportResult({ data, onStartOver, onViewClasses }: ImportResultProps) {
+export default function ImportResult({ data, type = "create", onStartOver, onViewClasses }: ImportResultProps) {
   const hasIssues = data.duplicateCount > 0 || data.errorCount > 0;
+  
+  const isCreateFlow = type === "create";
+  const title = isCreateFlow ? "Tạo lớp thành công!" : "Import sinh viên thành công!";
+  const description = isCreateFlow 
+    ? `Lớp học phần đã được tạo và import ${data.successCount} sinh viên thành công`
+    : `Đã import ${data.successCount} sinh viên vào lớp thành công`;
+  const actionText = isCreateFlow ? "Tạo lớp khác" : "Import lớp khác";
 
   return (
     <div className="space-y-6">
@@ -40,10 +48,10 @@ export default function ImportResult({ data, onStartOver, onViewClasses }: Impor
             <CheckCircle className="h-8 w-8 text-green-600" />
             <div>
               <h3 className="text-lg font-semibold text-green-800 dark:text-green-400">
-                Tạo lớp thành công!
+                {title}
               </h3>
               <p className="text-green-700 dark:text-green-300">
-                Lớp học phần đã được tạo và import {data.successCount} sinh viên thành công
+                {description}
               </p>
             </div>
           </div>
@@ -165,7 +173,7 @@ export default function ImportResult({ data, onStartOver, onViewClasses }: Impor
       <div className="flex justify-between">
         <Button variant="outline" onClick={onStartOver}>
           <RotateCcw className="h-4 w-4 mr-2" />
-          Tạo lớp khác
+          {actionText}
         </Button>
         <Button onClick={onViewClasses}>
           <List className="h-4 w-4 mr-2" />

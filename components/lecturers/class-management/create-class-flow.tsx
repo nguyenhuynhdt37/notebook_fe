@@ -15,18 +15,20 @@ interface CreateClassFlowProps {
 
 interface PreviewData {
   totalRows: number;
-  validRows: number;
-  errorRows: number;
-  errors: Array<{
+  successCount: number;
+  duplicateCount: number;
+  errorCount: number;
+  duplicates: Array<{
     rowNumber: number;
     studentCode: string;
     fullName: string;
     reason: string;
   }>;
-  students: Array<{
+  errors: Array<{
+    rowNumber: number;
     studentCode: string;
     fullName: string;
-    dateOfBirth: string;
+    reason: string;
   }>;
 }
 
@@ -141,6 +143,7 @@ export default function CreateClassFlow({ onBack }: CreateClassFlowProps) {
       {step === "result" && resultData && (
         <ImportResult
           data={resultData}
+          type="create"
           onStartOver={handleStartOver}
           onViewClasses={onBack}
         />

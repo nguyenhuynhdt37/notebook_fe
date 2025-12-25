@@ -110,7 +110,7 @@ interface StudentImportResult {
 - [x] **Manual Student Addition**: Form thêm sinh viên với email validation
 
 ### 🔄 Cần cải thiện
-- [ ] Authentication với X-User-Id header (hiện dùng mock)
+- [x] **Authentication**: X-User-Id header từ user store (đã fix)
 - [ ] Loading states cho API calls
 - [ ] Pagination cho preview table
 - [ ] Export kết quả import

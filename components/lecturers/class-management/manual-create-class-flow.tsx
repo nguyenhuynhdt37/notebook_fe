@@ -11,6 +11,7 @@ import { ArrowLeft, Settings, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import LecturerSubjectSelect from "@/components/lecturers/shared/lecturer-subject-select";
+import { useUserStore } from "@/stores/user";
 
 interface ManualCreateClassFlowProps {
   onBack: () => void;
@@ -56,6 +57,8 @@ export default function ManualCreateClassFlow({ onBack }: ManualCreateClassFlowP
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CreateClassResponse | null>(null);
   
+  const user = useUserStore((state) => state.user);
+  
   const [formData, setFormData] = useState<CreateClassRequest>({
     className: "",
     subjectId: "",
@@ -77,11 +80,16 @@ export default function ManualCreateClassFlow({ onBack }: ManualCreateClassFlowP
       return;
     }
 
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập để tiếp tục");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await api.post<CreateClassResponse>('/api/lecturer/manual-class-management/create-class', formData, {
         headers: {
-          'X-User-Id': 'lecturer-id', // TODO: Get from auth
+          'X-User-Id': user.id.toString(),
         },
       });
 

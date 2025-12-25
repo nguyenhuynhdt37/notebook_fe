@@ -10,6 +10,7 @@ import api from "@/api/client/axios";
 import FileUploadZone from "./file-upload-zone";
 import LecturerSubjectSelect from "@/components/lecturers/shared/lecturer-subject-select";
 import LecturerAssignmentSelect from "@/components/lecturers/shared/lecturer-assignment-select";
+import { useUserStore } from "@/stores/user";
 
 interface CreateClassFormProps {
   onPreview: (data: any, formData: any) => void;
@@ -21,6 +22,8 @@ export default function CreateClassForm({ onPreview }: CreateClassFormProps) {
   const [subjectId, setSubjectId] = useState("");
   const [teachingAssignmentId, setTeachingAssignmentId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  const user = useUserStore((state) => state.user);
 
   const handleFileSelect = (selectedFile: File) => {
     if (!selectedFile.name.endsWith('.xlsx')) {
@@ -43,6 +46,11 @@ export default function CreateClassForm({ onPreview }: CreateClassFormProps) {
       return;
     }
 
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập để tiếp tục");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const formData = new FormData();
@@ -51,16 +59,21 @@ export default function CreateClassForm({ onPreview }: CreateClassFormProps) {
       const response = await api.post('/api/lecturer/class-management/preview-excel', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-User-Id': 'lecturer-id', // TODO: Get from auth
+          'X-User-Id': user.id.toString(),
         },
       });
 
-      onPreview(response.data, {
-        file,
-        className,
-        subjectId,
-        teachingAssignmentId,
-      });
+      // API trả về { success, message, data, error }
+      if (response.data.success && response.data.data) {
+        onPreview(response.data.data, {
+          file,
+          className,
+          subjectId,
+          teachingAssignmentId,
+        });
+      } else {
+        toast.error(response.data.message || "Không thể xem trước file Excel");
+      }
     } catch (error: any) {
       console.error('Preview error:', error);
       toast.error(error.response?.data?.message || "Không thể xem trước file Excel");

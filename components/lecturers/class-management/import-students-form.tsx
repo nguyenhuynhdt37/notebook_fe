@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import api from "@/api/client/axios";
 import FileUploadZone from "./file-upload-zone";
 import { LecturerClassResponse, LecturerClassPagedResponse } from "@/types/lecturer/reference";
+import { useUserStore } from "@/stores/user";
 
 interface ImportStudentsFormProps {
   onPreview: (data: any, formData: any) => void;
@@ -22,6 +23,8 @@ export default function ImportStudentsForm({ onPreview }: ImportStudentsFormProp
   const [selectedClass, setSelectedClass] = useState<LecturerClassResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+  
+  const user = useUserStore((state) => state.user);
 
   // Fetch classes from API
   useEffect(() => {
@@ -72,6 +75,11 @@ export default function ImportStudentsForm({ onPreview }: ImportStudentsFormProp
       return;
     }
 
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập để tiếp tục");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const formData = new FormData();
@@ -81,14 +89,19 @@ export default function ImportStudentsForm({ onPreview }: ImportStudentsFormProp
       const response = await api.post('/api/lecturer/class-management/preview-excel', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-User-Id': 'lecturer-id', // TODO: Get from auth
+          'X-User-Id': user.id.toString(),
         },
       });
 
-      onPreview(response.data, {
-        file,
-        classId,
-      });
+      // API trả về { success, message, data, error }
+      if (response.data.success && response.data.data) {
+        onPreview(response.data.data, {
+          file,
+          classId,
+        });
+      } else {
+        toast.error(response.data.message || "Không thể xem trước file Excel");
+      }
     } catch (error: any) {
       console.error('Preview error:', error);
       toast.error(error.response?.data?.message || "Không thể xem trước file Excel");
