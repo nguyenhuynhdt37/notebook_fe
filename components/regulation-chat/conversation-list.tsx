@@ -18,6 +18,7 @@ interface ConversationListProps {
   onSelect: (id: string) => void;
   onConversationCreated: (id: string) => void;
   onConversationDeleted?: () => void;
+  onLoaded?: () => void;
 }
 
 export default function ConversationList({
@@ -25,6 +26,7 @@ export default function ConversationList({
   onSelect,
   onConversationCreated,
   onConversationDeleted,
+  onLoaded,
 }: ConversationListProps) {
   const [conversations, setConversations] = useState<RegulationConversation[]>(
     []
@@ -69,9 +71,12 @@ export default function ConversationList({
       } finally {
         setIsLoading(false);
         loadingRef.current = false;
+        if (reset && onLoaded) {
+          onLoaded();
+        }
       }
     },
-    [cursorNext, hasMore]
+    [cursorNext, hasMore, onLoaded]
   );
 
   useEffect(() => {

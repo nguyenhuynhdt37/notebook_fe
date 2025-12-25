@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Send,
   FileQuestion,
   Bot,
   User,
@@ -18,18 +17,19 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
   ChatMessage,
   RegulationConversation,
   RegulationMessage,
   RegulationMessagesResponse,
+  UploadedImage,
 } from "@/types/user/regulation-chat";
 import ConversationList from "./conversation-list";
+import ChatInput from "./chat-input";
+import MessageItem from "./message-item";
 import api from "@/api/client/axios";
 
 export default function RegulationChatPanel({
@@ -38,7 +38,6 @@ export default function RegulationChatPanel({
   selectedFileIds: string[];
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<
@@ -49,6 +48,36 @@ export default function RegulationChatPanel({
   const [hasMore, setHasMore] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const loadingHistoryRef = useRef(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return "Vừa xong";
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const handleCopy = async (content: string, messageId: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedId(messageId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -56,15 +85,37 @@ export default function RegulationChatPanel({
     }
   }, [messages]);
 
-  // Clear messages when conversation or files change
+  // Clear messages when files change
   useEffect(() => {
-    setMessages([]);
-  }, [selectedFileIds, selectedConversationId]);
+    if (selectedFileIds.length > 0) {
+      // Logic for file selection change if needed
+    }
+  }, [selectedFileIds]);
 
-  // Load active conversation on mount
+  // Load active conversation only after list is loaded
+  const handleListLoaded = useCallback(async () => {
+    // Only load if not already loaded (to avoid double load on strict mode or re-renders)
+    if (!selectedConversationId) {
+      await loadActiveConversation();
+    }
+  }, [selectedConversationId]);
+
+  /* 
+  // Removed direct mount loading - waiting for list now
   useEffect(() => {
     loadActiveConversation();
   }, []);
+  */
+
+  // Load messages when conversation ID changes
+  useEffect(() => {
+    if (selectedConversationId) {
+      setMessages([]);
+      setCursorNext(null);
+      setHasMore(false);
+      loadMessages(selectedConversationId, true);
+    }
+  }, [selectedConversationId]);
 
   const loadActiveConversation = async () => {
     try {
@@ -75,7 +126,6 @@ export default function RegulationChatPanel({
         setSelectedConversationId(response.data.id);
       }
     } catch (error: any) {
-      // 204 = no active conversation, that's fine
       if (error.response?.status !== 204) {
         console.error("Error loading active conversation:", error);
       }
@@ -141,8 +191,14 @@ export default function RegulationChatPanel({
         if (reset) {
           setMessages(uiMessages);
         } else {
-          // Prepend older messages
-          setMessages((prev) => [...uiMessages, ...prev]);
+          // Prepend older messages and deduplicate
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newUniqueMessages = uiMessages.filter(
+              (m) => !existingIds.has(m.id)
+            );
+            return [...newUniqueMessages, ...prev];
+          });
         }
 
         setCursorNext(data.cursorNext || null);
@@ -198,175 +254,88 @@ export default function RegulationChatPanel({
     [loadMessages]
   );
 
-  const handleSend = async () => {
-    if (!input.trim() || selectedFileIds.length === 0) return;
+  const handleSend = useCallback(
+    async (content: string, images?: UploadedImage[]) => {
+      if ((!content.trim() && !images?.length) || selectedFileIds.length === 0)
+        return;
 
-    let currentConversationId = selectedConversationId;
-    const currentInput = input;
+      setIsLoading(true);
 
-    setIsLoading(true);
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      role: "user",
-      content: currentInput,
-      timestamp: new Date(),
-    };
+      // Optimistic user message
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: content,
+        timestamp: new Date(),
+        images: images,
+      };
+      setMessages((prev) => [...prev, userMessage]);
 
-    // Optimistic user message
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
+      // Temporary AI message placeholder
+      const aiMessageId = (Date.now() + 1).toString();
+      const aiMessage: ChatMessage = {
+        id: aiMessageId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
 
-    // Temporary AI message for streaming
-    const aiMessageId = (Date.now() + 1).toString();
-    const aiMessage: ChatMessage = {
-      id: aiMessageId,
-      role: "assistant",
-      content: "",
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, aiMessage]);
+      try {
+        // Call chat API
+        const response = await api.post("/user/regulation/chat", {
+          message: content,
+          conversationId: selectedConversationId,
+          fileIds: selectedFileIds.length > 0 ? selectedFileIds : null,
+          images: images || null,
+        });
 
-    try {
-      // 1. Create conversation if not exists
-      if (!currentConversationId) {
-        const title =
-          currentInput.trim().slice(0, 50) +
-          (currentInput.length > 50 ? "..." : "");
-        const createRes = await api.post<RegulationConversation>(
-          `/user/regulation/chat/conversations?title=${encodeURIComponent(
-            title
-          )}`
-        );
-        currentConversationId = createRes.data.id;
-        setSelectedConversationId(currentConversationId);
-        window.dispatchEvent(new CustomEvent("regulation-chat:refresh"));
-        await api.post(
-          `/user/regulation/chat/conversations/${currentConversationId}/active`
-        );
-      }
+        const data = response.data;
 
-      // 2. Stream AI response
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_URL_BACKEND || "http://localhost:8386"
-        }/user/regulation/chat/conversations/${currentConversationId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Credentials will be sent via cookies automatically
-          },
-          body: JSON.stringify({
-            content: currentInput,
-            fileIds: selectedFileIds,
-          }),
+        // Update conversation ID if this was first message
+        if (!selectedConversationId && data.conversationId) {
+          setSelectedConversationId(data.conversationId);
+          window.dispatchEvent(new CustomEvent("regulation-chat:refresh"));
         }
-      );
 
-      if (!response.ok || !response.body) {
-        throw new Error("Failed to send message");
+        // Update AI message with real response
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  id: data.id || aiMessageId,
+                  content: data.content || "",
+                  sources: data.sources || undefined,
+                  timestamp: data.createdAt
+                    ? new Date(data.createdAt)
+                    : new Date(),
+                  isTyping: true, // Enable typing effect
+                }
+              : msg
+          )
+        );
+      } catch (error: any) {
+        console.error("Error sending message:", error);
+
+        // Show error in AI message
+        const errorMessage =
+          error.response?.data?.message ||
+          "Đã xảy ra lỗi khi nhận câu trả lời.";
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? { ...msg, content: `❌ ${errorMessage}` }
+              : msg
+          )
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let aiContent = "";
-
-      // Read chunks
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n\n"); // Assuming SSE format often uses double newlines
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const dataStr = line.replace("data: ", "").trim();
-            if (dataStr === "[DONE]") break;
-
-            try {
-              // Try parsing as JSON object first (for structured updates)
-              const data = JSON.parse(dataStr);
-              if (data.content) {
-                aiContent += data.content;
-              }
-
-              // Handle citations/sources if present
-              let currentSources = undefined;
-              if (data.sources && Array.isArray(data.sources)) {
-                currentSources = data.sources;
-              }
-
-              // Update UI
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === aiMessageId
-                    ? {
-                        ...msg,
-                        content: aiContent,
-                        sources: currentSources || msg.sources,
-                      }
-                    : msg
-                )
-              );
-            } catch {
-              // If not JSON, assume raw text content (fallback)
-              // But strictly speaking, we expect JSON chunks: { content: "...", ... }
-              // Adjust based on your actual backend streaming format.
-              // Common pattern: data: {"content": "Hello"}
-              // If your API returns raw text in data:, use dataStr directly.
-              // Assuming JSON based on typical RAG endpoints.
-
-              // IF THE BACKEND SENDS PLAIN TEXT CHUNKS:
-              // aiContent += dataStr;
-
-              // Let's assume standard OpenAI-like streaming for now, or simple text.
-              // If parsing fails, append raw string (removing quotes if it's a JSON string fragment)
-              // Safety fallback:
-              aiContent += dataStr.replace(/^"|"$/g, ""); // Remove quotes if simple string
-            }
-
-            // Update UI
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === aiMessageId ? { ...msg, content: aiContent } : msg
-              )
-            );
-
-            // Auto scroll to bottom
-            if (scrollRef.current) {
-              const scrollElement = scrollRef.current;
-              scrollElement
-                .querySelector("[data-radix-scroll-area-viewport]")
-                ?.scrollTo({
-                  top: scrollElement.scrollHeight,
-                  behavior: "smooth",
-                });
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // Remove failed AI message or show error
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId
-            ? { ...msg, content: "Đã xảy ra lỗi khi nhận câu trả lời." }
-            : msg
-        )
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+    },
+    [selectedConversationId, selectedFileIds]
+  );
 
   const canChat = selectedFileIds.length > 0;
 
@@ -375,11 +344,12 @@ export default function RegulationChatPanel({
       {/* Conversation List - Left Side - Collapsible */}
       <div
         className={cn(
-          "border-r flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden",
+          "border-r flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden flex flex-col",
           showConversations ? "w-64" : "w-0"
         )}
       >
-        {showConversations && (
+        {/* Always mount ConversationList to fetch data, just hide it */}
+        <div className={cn("h-full w-64", !showConversations && "hidden")}>
           <ConversationList
             selectedId={selectedConversationId}
             onSelect={handleSelectConversation}
@@ -392,8 +362,9 @@ export default function RegulationChatPanel({
               setSelectedConversationId(null);
               setMessages([]);
             }}
+            onLoaded={handleListLoaded}
           />
-        )}
+        </div>
       </div>
 
       {/* Chat Area - Right Side */}
@@ -485,114 +456,24 @@ export default function RegulationChatPanel({
                     </div>
                   )}
                   {messages.map((message) => (
-                    <div
+                    <MessageItem
                       key={message.id}
-                      className={cn(
-                        "flex gap-3",
-                        message.role === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      )}
-                    >
-                      {message.role === "assistant" && (
-                        <div className="flex-shrink-0 mt-1">
-                          <div className="bg-primary/10 rounded-full p-2">
-                            <Bot className="size-4 text-primary" />
-                          </div>
-                        </div>
-                      )}
-
-                      <div
-                        className={cn(
-                          "max-w-[80%] space-y-2",
-                          message.role === "user" && "order-1"
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "rounded-2xl px-4 py-3 text-sm",
-                            message.role === "user"
-                              ? "bg-primary text-primary-foreground rounded-tr-sm"
-                              : "bg-muted rounded-tl-sm"
-                          )}
-                        >
-                          <p className="leading-relaxed whitespace-pre-wrap">
-                            {message.content}
-                          </p>
-                        </div>
-                        <p className="text-xs text-muted-foreground px-2">
-                          {message.timestamp.toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-
-                      {message.role === "user" && (
-                        <div className="flex-shrink-0 mt-1 order-2">
-                          <div className="bg-primary rounded-full p-2">
-                            <User className="size-4 text-primary-foreground" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      message={message}
+                      copiedId={copiedId}
+                      onCopy={handleCopy}
+                      formatTime={formatTime}
+                    />
                   ))}
-
-                  {isLoading && (
-                    <div className="flex gap-3 justify-start">
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="bg-primary/10 rounded-full p-2">
-                          <Bot className="size-4 text-primary" />
-                        </div>
-                      </div>
-                      <div className="max-w-[80%]">
-                        <div className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm bg-muted">
-                          <div className="flex gap-1">
-                            <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" />
-                            <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce delay-75" />
-                            <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce delay-150" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </ScrollArea>
           </div>
-
-          <Separator />
-
-          <div className="p-4 flex-shrink-0 bg-muted/20">
-            <div className="flex gap-3 items-end">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  canChat
-                    ? "Nhập câu hỏi của bạn... (Enter để gửi, Shift+Enter để xuống dòng)"
-                    : "Vui lòng chọn tài liệu trước khi hỏi..."
-                }
-                disabled={!canChat}
-                className="resize-none min-h-[60px] max-h-[120px]"
-                rows={2}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading || !canChat}
-                size="icon"
-                className="flex-shrink-0 h-[60px] w-[60px]"
-              >
-                <Send className="size-5" />
-                <span className="sr-only">Gửi</span>
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2 px-1">
-              AI có thể mắc lỗi. Vui lòng tham khảo thêm văn bản gốc để có thông
-              tin chính xác nhất.
-            </p>
-          </div>
+          <ChatInput
+            onSend={handleSend}
+            disabled={!canChat}
+            isLoading={isLoading}
+            placeholder="Nhập câu hỏi của bạn"
+          />
         </CardContent>
       </div>
     </div>

@@ -37,6 +37,17 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   sources?: MessageSource[];
+  images?: UploadedImage[];
+  isTyping?: boolean;
+}
+
+// Uploaded Image type
+export interface UploadedImage {
+  id: string;
+  fileUrl: string;
+  fileName: string;
+  mimeType: string;
+  ocrText?: string;
 }
 
 // API Message types
@@ -50,10 +61,14 @@ export interface MessageFile {
 }
 
 export interface MessageSource {
-  sourceType: string;
-  fileId?: string;
-  chunkIndex?: number;
+  fileId: string;
+  fileName: string;
+  fileUrl?: string;
+  chunkIndex: number;
+  chunkContent: string;
+  similarity: number;
   score?: number;
+  sourceType?: string;
   provider?: string;
 }
 
