@@ -47,15 +47,9 @@ export function ExamCard({ exam, onUpdate }: ExamCardProps) {
           
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/lecturer/exams/${exam.id}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                Chi tiết
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
               <Link href={`/lecturer/exams/${exam.id}/preview`}>
-                <FileText className="mr-2 h-4 w-4" />
-                Xem trước
+                <Eye className="mr-2 h-4 w-4" />
+                Xem chi tiết
               </Link>
             </Button>
           </div>
