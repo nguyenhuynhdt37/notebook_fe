@@ -61,7 +61,7 @@ export interface Question {
 }
 
 export interface ExamDetailResponse extends ExamResponse {
-  questions: Question[];
+  questions?: Question[];
 }
 
 export interface PagedResponse<T> {

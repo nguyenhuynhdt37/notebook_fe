@@ -27,7 +27,7 @@ function TabsList({
       data-slot="tabs-list"
       className={cn(
         // Base
-        "inline-flex h-10 w-fit items-center justify-center gap-1",
+        "inline-flex h-10 items-center justify-center gap-1",
         // Background
         "bg-muted/50 rounded-lg p-1",
         className
