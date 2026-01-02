@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, Files } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import api from "@/api/client/axios";
 import { ExamResponse, PagedResponse } from "@/types/lecturer";
 import { ExamCard } from "./exam-card";
@@ -20,6 +21,7 @@ export default function ExamDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     loadExams();
@@ -79,10 +81,19 @@ export default function ExamDashboard() {
             Tạo và quản lý đề thi trực tuyến cho các lớp học
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Tạo đề thi mới
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => router.push('/lecturer/file-management')}
+          >
+            <Files className="mr-2 h-4 w-4" />
+            Quản lý Files
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Tạo đề thi mới
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filter */}

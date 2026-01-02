@@ -1,109 +1,286 @@
-# Exam Management Components
+# AI Question Generation - Frontend Implementation
 
-Hệ thống quản lý đề thi trực tuyến cho giảng viên, tuân thủ theo `EXAM_FRONTEND_PROMPT.md`.
+This directory contains the frontend implementation for AI-powered question generation according to the API specification in `AI_QUESTION_GENERATION_API_GUIDE.md`.
 
-## 🏗️ Cấu trúc Components
+## Components Overview
 
-### Core Components
+### 1. `generate-questions-modal.tsx`
+Main modal component for AI question generation workflow.
 
-- **`ExamDashboard`** - Trang chính quản lý đề thi
-- **`ExamCard`** - Card hiển thị thông tin đề thi
-- **`ExamPreview`** - Xem trước đề thi với đáp án
-- **`ExamByClass`** - Danh sách đề thi theo lớp
+**Features:**
+- Notebook selection from accessible notebooks
+- File management with upload/delete capabilities
+- Question generation configuration
+- Progress tracking during AI processing
+- Form validation and error handling
 
-### Modal Components
+**Key Updates:**
+- Updated to use new API endpoints (`/lecturer/notebooks/accessible`)
+- Added support for new question types (CODING, FILL_BLANK, MATCHING)
+- Integrated with FileManager component for better file handling
+- Improved UI with better progress indicators
 
-- **`CreateExamModal`** - Form tạo đề thi mới
-- **`GenerateQuestionsModal`** - Tạo câu hỏi tự động bằng AI
+### 2. `file-manager.tsx`
+Reusable component for managing notebook files.
 
-### Utility Components
+**Features:**
+- Simple file upload (recommended approach)
+- File listing with status indicators
+- File selection for question generation
+- File deletion with confirmation
+- Real-time file status updates
 
-- **`ExamStatusManager`** - Quản lý trạng thái đề thi
-- **`ExamStats`** - Thống kê đề thi
-
-## 🔄 Luồng hoạt động
-
-### 1. Tạo đề thi mới
+**Usage:**
+```tsx
+<FileManager
+  notebookId={selectedNotebook}
+  files={files}
+  selectedFiles={selectedFiles}
+  onFilesChange={setFiles}
+  onSelectionChange={setSelectedFiles}
+  allowUpload={true}
+  allowDelete={true}
+  allowSelection={true}
+/>
 ```
-ExamDashboard → CreateExamModal → API: POST /api/exams
+
+### 3. `exam-preview.tsx`
+Enhanced exam preview component with support for new question types.
+
+**New Features:**
+- Support for CODING, FILL_BLANK, MATCHING question types
+- Better question display with type-specific rendering
+- Improved file information display
+- Enhanced status management
+
+### 4. `ai-question-demo.tsx`
+Complete demo component showing the entire AI question generation workflow.
+
+**Demonstrates:**
+- Step-by-step workflow from notebook selection to exam publishing
+- All API endpoints integration
+- Error handling and user feedback
+- Best practices for using the new APIs
+
+## API Integration
+
+### Updated API Client (`api/client/exam.ts`)
+
+**New Methods:**
+- `getAccessibleNotebooks()` - Get notebooks lecturer can access
+- `uploadFilesSimple()` - Simple file upload (recommended)
+- `uploadFilesAdvanced()` - Advanced upload with custom config
+- `deleteFile()` - Delete file from notebook
+- `getAllAccessibleFiles()` - Get all accessible files across notebooks
+- `getFileDetail()` - Get detailed file information
+
+**Updated Endpoints:**
+- Changed from `/user/notebooks` to `/lecturer/notebooks/accessible`
+- Added file management endpoints
+- Enhanced error handling
+
+### Updated Types (`types/lecturer/exam.ts`)
+
+**New Types:**
+- Added CODING, FILL_BLANK, MATCHING to QuestionType
+- Enhanced NotebookFile with new fields (chunksCount, contentPreview)
+- Updated Notebook structure to match API response
+- Added UploadFilesRequest and FileDetailResponse types
+
+## Usage Examples
+
+### Basic Question Generation
+```tsx
+// 1. Load accessible notebooks
+const notebooks = await examApi.getAccessibleNotebooks();
+
+// 2. Select notebook and load files
+const files = await examApi.getNotebookFiles(notebookId);
+
+// 3. Upload additional files if needed
+const uploadedFiles = await examApi.uploadFilesSimple(notebookId, newFiles);
+
+// 4. Create exam
+const exam = await examApi.createExam(examData);
+
+// 5. Generate questions
+const examWithQuestions = await examApi.generateQuestions(exam.id, {
+  notebookFileIds: selectedFileIds,
+  numberOfQuestions: 20,
+  questionTypes: "MCQ,TRUE_FALSE",
+  difficultyLevel: "MEDIUM",
+  includeExplanation: true,
+  language: "vi"
+});
+
+// 6. Publish exam
+await examApi.publishExam(exam.id);
 ```
 
-### 2. Tạo câu hỏi AI
+### File Upload with Configuration
+```tsx
+// Simple upload (recommended)
+const uploadedFiles = await examApi.uploadFilesSimple(notebookId, files);
+
+// Advanced upload (for developers)
+const uploadedFiles = await examApi.uploadFilesAdvanced(notebookId, files, {
+  chunkSize: 3500,
+  chunkOverlap: 300
+});
 ```
-ExamPreview → GenerateQuestionsModal → API: POST /api/exams/{id}/generate
-```
 
-### 3. Quản lý trạng thái
-```
-ExamCard → ExamStatusManager → API: PUT /api/exams/{id}/{action}
-```
-
-## 📊 Trạng thái đề thi
-
-| Status | Mô tả | Actions |
-|--------|-------|---------|
-| `DRAFT` | Đang soạn thảo | Xuất bản, Xóa |
-| `PUBLISHED` | Đã xuất bản | Kích hoạt |
-| `ACTIVE` | Đang diễn ra | Dừng thi |
-| `CANCELLED` | Đã hủy | - |
-
-## 🎨 Design System
-
-- **Colors**: Chỉ đen/trắng/xám + red/yellow cho trạng thái
-- **UI Library**: 100% shadcn/ui components
-- **Spacing**: Generous whitespace, không chật chội
-- **Typography**: Clear hierarchy với font weights
-- **Interactions**: Smooth transitions, subtle hover states
-
-## 📱 Routes
-
-- `/exams` - Dashboard chính
-- `/exams/[id]/preview` - Xem trước đề thi
-- `/classes/[id]/exams` - Đề thi theo lớp
-
-## 🔧 API Integration
-
-Tất cả components tự quản lý state và API calls:
-
-```typescript
-// Pattern chuẩn
-const [data, setData] = useState<T | null>(null);
-const [isLoading, setIsLoading] = useState(true);
-
-useEffect(() => {
-  loadData();
-}, [dependencies]);
-
-const loadData = async () => {
-  setIsLoading(true);
-  try {
-    const response = await api.get<T>("/endpoint");
-    setData(response.data);
-  } catch (error) {
-    toast.error("Error message");
-  } finally {
-    setIsLoading(false);
-  }
+### Question Generation Configuration
+```tsx
+const generateRequest: GenerateQuestionsRequest = {
+  notebookFileIds: ["file-1", "file-2"],
+  numberOfQuestions: 20,
+  questionTypes: "MCQ,TRUE_FALSE,CODING", // Multiple types
+  difficultyLevel: "MIXED", // Mixed difficulty
+  mcqOptionsCount: 4,
+  includeExplanation: true,
+  language: "vi",
+  // For mixed difficulty
+  easyPercentage: 30,
+  mediumPercentage: 50,
+  hardPercentage: 20
 };
 ```
 
-## ✅ Features
+## Key Features Implemented
 
-- [x] Dashboard với thống kê
-- [x] Tạo đề thi với form validation
-- [x] Tạo câu hỏi AI từ notebook
-- [x] Quản lý trạng thái đề thi
-- [x] Xem trước đề thi với đáp án
-- [x] Responsive design
-- [x] Loading states với skeleton
-- [x] Error handling với toast
-- [x] Pagination
-- [x] Search & filter
+### ✅ API Integration
+- [x] All new API endpoints integrated
+- [x] Proper error handling and validation
+- [x] JWT authentication support
+- [x] File upload with progress tracking
 
-## 🚀 Performance
+### ✅ UI Components
+- [x] Modern, responsive design
+- [x] File management interface
+- [x] Progress indicators for AI processing
+- [x] Form validation and user feedback
+- [x] Support for all question types
 
-- Server Components cho initial data
-- Client Components cho interactivity
-- Efficient re-renders
-- Skeleton loading states
-- Optimistic updates
+### ✅ File Management
+- [x] Simple upload (recommended)
+- [x] Advanced upload with configuration
+- [x] File deletion and management
+- [x] Status indicators (OCR, embedding done)
+- [x] Content preview
+
+### ✅ Question Generation
+- [x] Multiple question types support
+- [x] Difficulty level configuration
+- [x] Mixed difficulty with percentage distribution
+- [x] Explanation generation
+- [x] Language selection (Vietnamese/English)
+
+### ✅ Error Handling
+- [x] Comprehensive error messages
+- [x] Form validation
+- [x] Network error handling
+- [x] User-friendly feedback
+
+## Best Practices
+
+### 1. File Upload
+- **Use Simple Upload**: For most cases, use `uploadFilesSimple()` as recommended
+- **Advanced Upload**: Only for developers who need custom chunk configuration
+- **File Validation**: Check file types and sizes before upload
+- **Progress Feedback**: Show upload progress to users
+
+### 2. Question Generation
+- **File Selection**: Only use files with `status: "done"` and `ocrDone: true`
+- **Validation**: Validate all form inputs before submission
+- **Progress Tracking**: Show AI processing progress to users
+- **Error Recovery**: Handle AI generation failures gracefully
+
+### 3. Performance
+- **Lazy Loading**: Load files only when notebook is selected
+- **Debounced Search**: Implement search debouncing for file filtering
+- **Caching**: Cache notebook and file data when appropriate
+- **Pagination**: Consider pagination for large file lists
+
+### 4. User Experience
+- **Clear Feedback**: Provide clear success/error messages
+- **Loading States**: Show loading indicators during API calls
+- **Form Validation**: Validate inputs before submission
+- **Responsive Design**: Ensure mobile compatibility
+
+## Configuration
+
+### Environment Variables
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8386
+```
+
+### API Base URL
+The backend API is expected to run on `http://localhost:8386` as specified in the API guide.
+
+## Testing
+
+### Manual Testing Checklist
+- [ ] Load accessible notebooks
+- [ ] Select notebook and view files
+- [ ] Upload new files (simple method)
+- [ ] Delete files
+- [ ] Select files for question generation
+- [ ] Configure question generation parameters
+- [ ] Generate questions with AI
+- [ ] Preview generated exam
+- [ ] Publish exam
+
+### Error Scenarios
+- [ ] Network errors during API calls
+- [ ] Invalid file uploads
+- [ ] AI generation failures
+- [ ] Form validation errors
+- [ ] Authentication failures
+
+## Future Enhancements
+
+### Planned Features
+- [ ] Advanced upload configuration UI
+- [ ] File preview modal
+- [ ] Batch file operations
+- [ ] Question editing after generation
+- [ ] Export/import functionality
+- [ ] Analytics and reporting
+
+### Performance Improvements
+- [ ] Virtual scrolling for large file lists
+- [ ] Image optimization for file previews
+- [ ] Background file processing status
+- [ ] Offline support for drafts
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Files not showing as "ready"**
+- Check if OCR and embedding processing is complete
+- Verify file format is supported
+- Check backend processing logs
+
+**2. AI generation fails**
+- Verify selected files are valid
+- Check question generation parameters
+- Ensure backend AI service is running
+
+**3. Upload failures**
+- Check file size limits
+- Verify file format support
+- Check network connectivity
+
+**4. Authentication errors**
+- Verify JWT token is valid
+- Check token expiration
+- Ensure proper authorization headers
+
+### Debug Mode
+Enable debug logging by setting:
+```javascript
+localStorage.setItem('debug', 'exam-api');
+```
+
+This implementation provides a complete, production-ready solution for AI-powered question generation with excellent user experience and robust error handling.

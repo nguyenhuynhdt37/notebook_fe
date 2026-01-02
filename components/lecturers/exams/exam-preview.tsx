@@ -10,10 +10,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import api from "@/api/client/axios";
-import { ExamDetailResponse, Question } from "@/types/lecturer";
+import examApi from "@/api/client/exam";
+import { ExamDetailResponse, Question } from "@/types/lecturer/exam";
 import { GenerateQuestionsModal } from "./generate-questions-modal";
 import { ExamStatusManager } from "./exam-status-manager";
+import { DebugGenerateQuestions } from "./debug-generate-questions";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -32,6 +33,9 @@ const questionTypeLabels = {
   MCQ: "Trắc nghiệm",
   TRUE_FALSE: "Đúng/Sai", 
   ESSAY: "Tự luận",
+  CODING: "Lập trình",
+  FILL_BLANK: "Điền khuyết",
+  MATCHING: "Ghép đôi",
 };
 
 const difficultyLabels = {
@@ -61,13 +65,13 @@ export default function ExamPreview({ examId }: ExamPreviewProps) {
   const loadExam = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get<ExamDetailResponse>(`/api/exams/${examId}/preview`);
+      const examData = await examApi.previewExam(examId);
       // Ensure questions array exists
-      const examData = {
-        ...response.data,
-        questions: response.data.questions || []
+      const exam = {
+        ...examData,
+        questions: examData.questions || []
       };
-      setExam(examData);
+      setExam(exam);
     } catch (error) {
       console.error("Error loading exam:", error);
       toast.error("Không thể tải thông tin đề thi");
@@ -354,6 +358,11 @@ export default function ExamPreview({ examId }: ExamPreviewProps) {
         onOpenChange={setShowGenerateModal}
         onSuccess={handleGenerateSuccess}
       />
+
+      {/* Debug Component - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <DebugGenerateQuestions examId={examId} />
+      )}
     </div>
   );
 }
@@ -378,10 +387,10 @@ function QuestionCard({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Badge variant="outline">
-                  {questionTypeLabels[question.type]}
+                  {questionTypeLabels[question.questionType]}
                 </Badge>
-                <Badge className={difficultyColors[question.difficulty]}>
-                  {difficultyLabels[question.difficulty]}
+                <Badge className={difficultyColors[question.difficultyLevel]}>
+                  {difficultyLabels[question.difficultyLevel]}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
                   {question.points} điểm
@@ -405,18 +414,18 @@ function QuestionCard({
       
       <CardContent className="space-y-4">
         <div className="prose prose-sm max-w-none">
-          <p className="font-medium">{question.content}</p>
+          <p className="font-medium">{question.questionText}</p>
         </div>
 
-        {question.type === "MCQ" && question.options && (
+        {question.questionType === "MCQ" && question.options && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Các lựa chọn:</p>
             <div className="space-y-2">
               {question.options.map((option, optionIndex) => (
                 <div 
-                  key={optionIndex}
+                  key={option.id}
                   className={`flex items-center gap-2 p-2 rounded border ${
-                    option === question.correctAnswer 
+                    option.isCorrect 
                       ? "bg-green-50 border-green-200" 
                       : "bg-muted/30"
                   }`}
@@ -424,8 +433,8 @@ function QuestionCard({
                   <div className="flex h-6 w-6 items-center justify-center rounded-full border text-xs">
                     {String.fromCharCode(65 + optionIndex)}
                   </div>
-                  <span className="flex-1">{option}</span>
-                  {option === question.correctAnswer && (
+                  <span className="flex-1">{option.optionText}</span>
+                  {option.isCorrect && (
                     <Badge variant="secondary" className="bg-green-100 text-green-800">
                       Đáp án đúng
                     </Badge>
@@ -436,20 +445,60 @@ function QuestionCard({
           </div>
         )}
 
-        {question.type === "TRUE_FALSE" && (
+        {question.questionType === "TRUE_FALSE" && question.options && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Đáp án:</p>
-            <Badge className={question.correctAnswer === "true" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-              {question.correctAnswer === "true" ? "Đúng" : "Sai"}
-            </Badge>
+            {question.options.map((option) => (
+              option.isCorrect && (
+                <Badge key={option.id} className={option.optionText === "true" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                  {option.optionText === "true" ? "Đúng" : "Sai"}
+                </Badge>
+              )
+            ))}
           </div>
         )}
 
-        {question.type === "ESSAY" && (
+        {question.questionType === "ESSAY" && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Gợi ý đáp án:</p>
             <div className="p-3 bg-muted/50 rounded border">
-              <p className="text-sm">{question.correctAnswer}</p>
+              <p className="text-sm">{question.explanation || "Không có gợi ý đáp án"}</p>
+            </div>
+          </div>
+        )}
+
+        {question.questionType === "CODING" && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Yêu cầu code:</p>
+            <div className="p-3 bg-gray-50 rounded border font-mono text-sm">
+              <p>{question.explanation || "Không có yêu cầu cụ thể"}</p>
+            </div>
+          </div>
+        )}
+
+        {question.questionType === "FILL_BLANK" && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Đáp án điền khuyết:</p>
+            <div className="space-y-1">
+              {question.options?.filter(opt => opt.isCorrect).map((option, index) => (
+                <Badge key={option.id} variant="secondary" className="mr-2">
+                  Chỗ trống {index + 1}: {option.optionText}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {question.questionType === "MATCHING" && question.options && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Cặp ghép đúng:</p>
+            <div className="grid gap-2">
+              {question.options.filter(opt => opt.isCorrect).map((option) => (
+                <div key={option.id} className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded">
+                  <Badge variant="outline">{option.orderIndex}</Badge>
+                  <span className="flex-1">{option.optionText}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
