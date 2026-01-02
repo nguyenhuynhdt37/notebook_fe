@@ -15,6 +15,7 @@ import {
   ChevronRight,
   FolderPlus,
   BookOpenCheck,
+  Files,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
   },
   { title: "Lớp học phần", href: "/lecturer/classes", icon: BookOpen },
   { title: "Quản lý lớp", href: "/lecturer/class-management", icon: FolderPlus },
+  { title: "Quản lý Files", href: "/lecturer/file-management", icon: Files },
   { title: "Bài kiểm tra", href: "/lecturer/exams", icon: BookOpenCheck },
   { title: "Sinh viên", href: "/lecturer/students", icon: Users },
   { title: "Điểm danh", href: "/lecturer/attendance", icon: ClipboardCheck },
