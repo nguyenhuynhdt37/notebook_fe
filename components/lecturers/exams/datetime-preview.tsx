@@ -4,8 +4,8 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
 interface DateTimePreviewProps {
-  startDate?: Date;
-  endDate?: Date;
+  startDate: Date;
+  endDate: Date;
   startTime: string;
   endTime: string;
 }
@@ -13,17 +13,14 @@ interface DateTimePreviewProps {
 export function DateTimePreview({ startDate, endDate, startTime, endTime }: DateTimePreviewProps) {
   const combineDateTime = (date: Date, time: string): Date => {
     const [hours, minutes] = time.split(':').map(Number);
-    const combined = new Date(date);
-    combined.setHours(hours, minutes, 0, 0);
+    // Create new date in local timezone
+    const combined = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, 0, 0);
     return combined;
   };
 
-  if (!startDate || !endDate) {
-    return null;
-  }
-
   const startDateTime = combineDateTime(startDate, startTime);
   const endDateTime = combineDateTime(endDate, endTime);
+  const now = new Date();
   
   // Calculate duration
   const durationMs = endDateTime.getTime() - startDateTime.getTime();
@@ -43,6 +40,11 @@ export function DateTimePreview({ startDate, endDate, startTime, endTime }: Date
         <p className="text-sm text-muted-foreground">
           <span className="font-medium">Thời lượng:</span> {durationHours > 0 && `${durationHours} giờ `}{durationMinutes} phút
         </p>
+        {startDateTime <= now && (
+          <p className="text-sm text-red-600 font-medium">
+            ⚠️ Thời gian bắt đầu phải trong tương lai
+          </p>
+        )}
         {endDateTime <= startDateTime && (
           <p className="text-sm text-red-600 font-medium">
             ⚠️ Thời gian kết thúc phải sau thời gian bắt đầu
