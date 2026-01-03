@@ -10,6 +10,13 @@ import {
   UploadFilesRequest,
   FileDetailResponse
 } from "@/types/lecturer/exam";
+import {
+  AvailableExam,
+  BrowserInfo,
+  StartExamResponse,
+  SubmitExamRequest,
+  ExamResult
+} from "@/types/student/exam";
 
 export const examApi = {
   // Exam CRUD operations
@@ -56,7 +63,10 @@ export const examApi = {
   // Question generation
   generateQuestions: async (examId: string, data: GenerateQuestionsRequest): Promise<ExamDetailResponse> => {
     try {
-      const response = await api.post<ExamDetailResponse>(`/api/exams/${examId}/generate`, data);
+      // Increase timeout for AI question generation (5 minutes)
+      const response = await api.post<ExamDetailResponse>(`/api/exams/${examId}/generate`, data, {
+        timeout: 300000 // 5 minutes
+      });
       console.log("Generate questions response:", {
         status: response.status,
         statusText: response.statusText,
@@ -181,6 +191,32 @@ export const examApi = {
     const response = await api.get<PagedResponse<ExamResponse>>(
       `/api/exams/class/${classId}?page=${page}&size=${size}`
     );
+    return response.data;
+  },
+
+  // Student exam endpoints
+  getAvailableExams: async (): Promise<AvailableExam[]> => {
+    const response = await api.get<AvailableExam[]>("/api/exams/available");
+    return response.data;
+  },
+
+  canTakeExam: async (examId: string): Promise<boolean> => {
+    const response = await api.get<boolean>(`/api/exams/${examId}/can-take`);
+    return response.data;
+  },
+
+  startExam: async (examId: string, browserInfo: BrowserInfo): Promise<StartExamResponse> => {
+    const response = await api.post<StartExamResponse>(`/api/exams/${examId}/start`, browserInfo);
+    return response.data;
+  },
+
+  submitExam: async (examId: string, submitData: SubmitExamRequest): Promise<ExamResult> => {
+    const response = await api.post<ExamResult>(`/api/exams/${examId}/submit`, submitData);
+    return response.data;
+  },
+
+  getExamResult: async (examId: string): Promise<ExamResult> => {
+    const response = await api.get<ExamResult>(`/api/exams/${examId}/result`);
     return response.data;
   },
 };

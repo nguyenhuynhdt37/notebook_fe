@@ -12,6 +12,7 @@ import { ExamResponse } from "@/types/lecturer";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ExamStatusManager } from "./exam-status-manager";
+import examApi from "@/api/client/exam";
 
 interface ExamCardProps {
   exam: ExamResponse;
@@ -30,6 +31,24 @@ export function ExamCard({ exam, onUpdate }: ExamCardProps) {
   const startTime = new Date(exam.startTime);
   const endTime = new Date(exam.endTime);
   const now = new Date();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirm("Bạn có chắc chắn muốn xóa đề thi này không?")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await examApi.deleteExam(exam.id);
+      toast.success("Xóa đề thi thành công");
+      onUpdate();
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi xóa đề thi");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Card className="transition-all duration-200 hover:shadow-md">
@@ -46,6 +65,16 @@ export function ExamCard({ exam, onUpdate }: ExamCardProps) {
           </div>
           
           <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              {isDeleting ? "Đang xóa..." : "Xóa"}
+            </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link href={`/lecturer/exams/${exam.id}/preview`}>
                 <Eye className="mr-2 h-4 w-4" />

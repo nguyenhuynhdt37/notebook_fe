@@ -49,10 +49,33 @@ interface ClassOption {
 export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [classes, setClasses] = useState<ClassOption[]>([]);
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("10:00");
+  
+  // Set default dates and times
+  const getDefaultStartDateTime = () => {
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+    return {
+      date: oneHourLater,
+      time: `${oneHourLater.getHours().toString().padStart(2, '0')}:${oneHourLater.getMinutes().toString().padStart(2, '0')}`
+    };
+  };
+
+  const getDefaultEndDateTime = () => {
+    const now = new Date();
+    const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+    return {
+      date: twoHoursLater,
+      time: `${twoHoursLater.getHours().toString().padStart(2, '0')}:${twoHoursLater.getMinutes().toString().padStart(2, '0')}`
+    };
+  };
+
+  const defaultStart = getDefaultStartDateTime();
+  const defaultEnd = getDefaultEndDateTime();
+
+  const [startDate, setStartDate] = useState<Date>(defaultStart.date);
+  const [endDate, setEndDate] = useState<Date>(defaultEnd.date);
+  const [startTime, setStartTime] = useState(defaultStart.time);
+  const [endTime, setEndTime] = useState(defaultEnd.time);
   const [formData, setFormData] = useState<Partial<CreateExamRequest>>({
     title: "",
     description: "",
@@ -89,19 +112,14 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
 
   const combineDateTime = (date: Date, time: string): Date => {
     const [hours, minutes] = time.split(':').map(Number);
-    const combined = new Date(date);
-    combined.setHours(hours, minutes, 0, 0);
+    // Create new date in local timezone
+    const combined = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, 0, 0);
     return combined;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!startDate || !endDate) {
-      toast.error("Vui lòng chọn thời gian bắt đầu và kết thúc");
-      return;
-    }
-
     if (!formData.classId) {
       toast.error("Vui lòng chọn lớp học");
       return;
@@ -111,26 +129,93 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
     const startDateTime = combineDateTime(startDate, startTime);
     const endDateTime = combineDateTime(endDate, endTime);
 
+    // Validate that start time is in the future
+    const now = new Date();
+    if (startDateTime <= now) {
+      toast.error("Thời gian bắt đầu phải trong tương lai");
+      return;
+    }
+
     // Validate that end time is after start time
     if (endDateTime <= startDateTime) {
       toast.error("Thời gian kết thúc phải sau thời gian bắt đầu");
       return;
     }
 
+    // Try different time formats to match backend expectation
+    const formatForBackend = (date: Date): string => {
+      // Backend test successful with: "2026-01-03T12:45:50.670"
+      // Use UTC to avoid timezone issues
+      const year = date.getUTCFullYear();
+      const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+      const day = date.getUTCDate().toString().padStart(2, '0');
+      const hours = date.getUTCHours().toString().padStart(2, '0');
+      const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+      const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+      const ms = date.getUTCMilliseconds();
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}`;
+    };
+
+    // Alternative: try adding timezone offset to make it clearly future
+    const formatWithBuffer = (date: Date): string => {
+      // Add 2 hours buffer to ensure it's in future even with timezone conversion
+      const bufferedDate = new Date(date.getTime() + 2 * 60 * 60 * 1000);
+      return formatForBackend(bufferedDate);
+    };
+
+    // Format for Spring Boot LocalDateTime (no timezone)
+    const formatForLocalDateTime = (date: Date): string => {
+      // LocalDateTime expects format: "2026-01-03T12:45:50" (no timezone)
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    };
+
     setIsLoading(true);
     try {
+      console.log("=== DEBUG EXAM CREATION ===");
+      console.log("Current time:", new Date());
+      console.log("Current time ISO:", new Date().toISOString());
+      console.log("Timezone offset (minutes):", new Date().getTimezoneOffset());
+      console.log("Start date selected:", startDate);
+      console.log("Start time selected:", startTime);
+      console.log("Combined start datetime:", startDateTime);
+      console.log("Combined start datetime LOCAL:", startDateTime.toString());
+      console.log("End datetime:", endDateTime);
+      console.log("End datetime LOCAL:", endDateTime.toString());
+      console.log("Is start time in future?", startDateTime > now);
+      console.log("Time difference (ms):", startDateTime.getTime() - now.getTime());
+
       const examData: CreateExamRequest = {
         ...formData as CreateExamRequest,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        startTime: formatForLocalDateTime(startDateTime),
+        endTime: formatForLocalDateTime(endDateTime),
       };
+
+      console.log("Formatted start time for LocalDateTime:", examData.startTime);
+      console.log("Formatted end time for LocalDateTime:", examData.endTime);
+      console.log("Final exam data being sent:", examData);
 
       await api.post("/api/exams", examData);
       toast.success("Tạo đề thi thành công");
       onSuccess();
       resetForm();
-    } catch (error) {
-      console.error("Error creating exam:", error);
+    } catch (error: any) {
+      console.error("=== ERROR CREATING EXAM ===");
+      console.error("Error object:", error);
+      console.error("Response status:", error.response?.status);
+      console.error("Response data:", error.response?.data);
+      console.error("Request data was:", {
+        startTime: formatForLocalDateTime(startDateTime),
+        endTime: formatForLocalDateTime(endDateTime),
+        ...formData
+      });
       toast.error("Không thể tạo đề thi");
     } finally {
       setIsLoading(false);
@@ -138,6 +223,9 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
   };
 
   const resetForm = () => {
+    const defaultStart = getDefaultStartDateTime();
+    const defaultEnd = getDefaultEndDateTime();
+    
     setFormData({
       title: "",
       description: "",
@@ -147,10 +235,10 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
       shuffleOptions: true,
       maxAttempts: 1,
     });
-    setStartDate(undefined);
-    setEndDate(undefined);
-    setStartTime("08:00");
-    setEndTime("10:00");
+    setStartDate(defaultStart.date);
+    setEndDate(defaultEnd.date);
+    setStartTime(defaultStart.time);
+    setEndTime(defaultEnd.time);
   };
 
   const handleInputChange = (field: keyof CreateExamRequest, value: any) => {
@@ -234,6 +322,7 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
                         mode="single"
                         selected={startDate}
                         onSelect={setStartDate}
+                        required
                       />
                     </PopoverContent>
                   </Popover>
@@ -268,6 +357,7 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
                         mode="single"
                         selected={endDate}
                         onSelect={setEndDate}
+                        required
                       />
                     </PopoverContent>
                   </Popover>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Menu, LogOut, BookOpen, Home, User } from "lucide-react";
+import { Menu, LogOut, BookOpen, Home, User, FileText } from "lucide-react";
 import { useUserStore } from "@/stores/user";
 import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,12 @@ export default function Header() {
                 <Link href="/notebook" className="gap-2">
                   <BookOpen className="size-4" />
                   Notebooks
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/exams" className="gap-2">
+                  <FileText className="size-4" />
+                  Đề thi
                 </Link>
               </Button>
             </div>
@@ -188,6 +194,16 @@ export default function Header() {
                     <Link href="/notebook" className="gap-3">
                       <BookOpen className="size-4" />
                       Notebooks
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    asChild
+                  >
+                    <Link href="/exams" className="gap-3">
+                      <FileText className="size-4" />
+                      Đề thi
                     </Link>
                   </Button>
 

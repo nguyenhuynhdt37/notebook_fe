@@ -10,7 +10,7 @@ const api = axios.create({
     Accept: "application/json, text/plain, */*",
   },
   withCredentials: true,
-  timeout: 30000, // 30s timeout
+  timeout: 300000,
 });
 
 // Response interceptor: xử lý lỗi auth và mạng
