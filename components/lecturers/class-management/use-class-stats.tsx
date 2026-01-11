@@ -25,18 +25,23 @@ export function useClassStats(): ClassStats {
     const fetchStats = async () => {
       try {
         // Fetch all classes
-        const response = await api.get<LecturerClassPagedResponse>('/lecturer/classes?size=1000');
-        
+        const response = await api.get<LecturerClassPagedResponse>(
+          "/lecturer/classes?size=1000"
+        );
+
         if (response.data?.items) {
           const classes = response.data.items;
           const today = new Date().toDateString();
-          
+
           const totalClasses = classes.length;
-          const activeClasses = classes.filter(cls => cls.isActive).length;
-          const totalStudents = classes.reduce((sum, cls) => sum + cls.studentCount, 0);
-          
+          const activeClasses = classes.filter((cls) => cls.isActive).length;
+          const totalStudents = classes.reduce(
+            (sum, cls) => sum + cls.studentCount,
+            0
+          );
+
           // Count classes created today (simplified - in real app, you'd have createdAt date comparison)
-          const classesToday = classes.filter(cls => {
+          const classesToday = classes.filter((cls) => {
             const createdDate = new Date(cls.createdAt).toDateString();
             return createdDate === today;
           }).length;
@@ -50,8 +55,8 @@ export function useClassStats(): ClassStats {
           });
         }
       } catch (error) {
-        console.error('Error fetching class stats:', error);
-        setStats(prev => ({ ...prev, isLoading: false }));
+        console.error("Error fetching class stats:", error);
+        setStats((prev) => ({ ...prev, isLoading: false }));
       }
     };
 

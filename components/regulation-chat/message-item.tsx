@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Copy, Check, Loader2, BookOpen } from "lucide-react";
+import { Copy, Check, Loader2, BookOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import MarkdownRenderer from "@/components/shared/markdown-renderer";
 import { ChatMessage } from "@/types/user/regulation-chat";
@@ -185,6 +186,33 @@ export default function MessageItem({
             </div>
           )}
       </div>
+
+      {/* Image Preview Modal */}
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={(open) => !open && setSelectedImage(null)}
+      >
+        <DialogContent className="max-w-4xl w-auto p-0 bg-transparent border-0 shadow-none">
+          <DialogTitle className="sr-only">Xem ảnh</DialogTitle>
+          <div className="relative">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute -top-10 right-0 size-8 rounded-full bg-background/90 hover:bg-background"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="size-4" />
+            </Button>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Preview"
+                className="max-h-[85vh] max-w-full rounded-lg object-contain"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { FileText, Info } from "lucide-react";
+import { FileText, Info, LayoutDashboard } from "lucide-react";
+import { useUserStore } from "@/stores/user";
+import Link from "next/link";
 import api from "@/api/client/axios";
 import RegulationFileList from "./regulation-file-list";
 import RegulationChatPanel from "./regulation-chat-panel";
@@ -23,6 +25,7 @@ export default function RegulationChat() {
   const [notebookInfo, setNotebookInfo] = useState<NotebookInfo | null>(null);
   const [isLoadingInfo, setIsLoadingInfo] = useState(true);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const { user } = useUserStore();
 
   useEffect(() => {
     loadNotebookInfo();
@@ -75,6 +78,14 @@ export default function RegulationChat() {
                       <Info className="size-4 mr-1.5" />
                       Xem chi tiết
                     </Button>
+                  )}
+                  {user && (
+                    <Link href="/" passHref>
+                      <Button variant="ghost" size="sm">
+                        <LayoutDashboard className="size-4 mr-1.5" />
+                        Trang chủ
+                      </Button>
+                    </Link>
                   )}
                 </div>
               </>
