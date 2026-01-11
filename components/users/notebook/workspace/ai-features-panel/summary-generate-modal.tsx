@@ -80,24 +80,29 @@ export default function SummaryGenerateModal({
     setErrorMessage(null);
 
     try {
+      // Tất cả params gửi qua query string theo API spec
       const params = new URLSearchParams();
+
+      // fileIds (bắt buộc)
       selectedFileIds.forEach((id) => params.append("fileIds", id));
 
-      const body: Record<string, unknown> = {
-        language,
-      };
-
-      if (enableAudio) {
-        body.voiceId = voiceId;
+      // language (optional, default: vi)
+      if (language) {
+        params.append("language", language);
       }
 
+      // voiceId (optional - nếu có sẽ tạo audio TTS)
+      if (enableAudio && voiceId) {
+        params.append("voiceId", voiceId);
+      }
+
+      // additionalRequirements (optional)
       if (additionalRequirements.trim()) {
-        body.additionalRequirements = additionalRequirements.trim();
+        params.append("additionalRequirements", additionalRequirements.trim());
       }
 
       await api.post(
-        `/user/notebooks/${notebookId}/ai/summary/generate?${params.toString()}`,
-        body
+        `/user/notebooks/${notebookId}/ai/summary/generate?${params.toString()}`
       );
 
       toast.success("Đang tạo bản tóm tắt. Sẽ xuất hiện khi hoàn thành.");

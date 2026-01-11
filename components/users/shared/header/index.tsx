@@ -3,7 +3,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Menu, LogOut, BookOpen, Home, User, FileText } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  BookOpen,
+  Home,
+  User,
+  FileText,
+  MessageSquare,
+} from "lucide-react";
 import { useUserStore } from "@/stores/user";
 import { handleLogout } from "@/lib/utils/logout";
 import { Button } from "@/components/ui/button";
@@ -94,6 +102,14 @@ export default function Header() {
                   Đề thi
                 </Link>
               </Button>
+              {user && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/regulation-chat" className="gap-2">
+                    <MessageSquare className="size-4" />
+                    Hỏi đáp quy chế
+                  </Link>
+                </Button>
+              )}
             </div>
 
             <Separator orientation="vertical" className="h-6 mx-4" />
@@ -206,6 +222,18 @@ export default function Header() {
                       Đề thi
                     </Link>
                   </Button>
+                  {user && (
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      asChild
+                    >
+                      <Link href="/regulation-chat" className="gap-3">
+                        <MessageSquare className="size-4" />
+                        Hỏi đáp quy chế
+                      </Link>
+                    </Button>
+                  )}
 
                   <Separator className="my-4" />
 

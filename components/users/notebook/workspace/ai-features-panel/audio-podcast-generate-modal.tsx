@@ -76,6 +76,7 @@ export default function AudioPodcastGenerateModal({
 
       toast.success("Đang tạo Podcast. Sẽ xuất hiện khi hoàn thành.");
       onSuccess?.();
+      onOpenChange(false);
       resetState();
     } catch (err: unknown) {
       const resp = (
