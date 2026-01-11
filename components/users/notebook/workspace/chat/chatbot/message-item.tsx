@@ -32,6 +32,7 @@ interface MessageItemProps {
   copiedId: string | null;
   onCopy: (content: string, messageId: string) => void;
   formatTime: (dateString: string) => string;
+  notebookId?: string;
 }
 
 export default function MessageItem({
@@ -40,6 +41,7 @@ export default function MessageItem({
   copiedId,
   onCopy,
   formatTime,
+  notebookId,
 }: MessageItemProps) {
   const isUser = message.role === "user";
   const isLoading = !isUser && !message.content;
@@ -218,6 +220,7 @@ export default function MessageItem({
               <SourcesHorizontal
                 sources={message.sources}
                 sourceDetails={message.sourceDetails}
+                notebookId={notebookId}
               />
             </div>
           )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,9 @@ import MindmapGenerateModal from "./mindmap-generate-modal";
 import SuggestionGenerateModal from "./suggestion-generate-modal";
 import VideoGenerateModal from "./video-generate-modal";
 import SummaryGenerateModal from "./summary-generate-modal";
+import AiTaskWebSocket from "./ai-task-websocket";
+import { getCookie } from "@/lib/utils/cookie";
+import { useUserStore } from "@/stores/user";
 
 interface AudioInfo {
   id: string;
@@ -73,6 +76,8 @@ export default function AIFeaturesPanel({
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentAudio, setCurrentAudio] = useState<AudioInfo | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const { user } = useUserStore();
 
   const handleAudioPlay = useCallback((audio: AudioInfo | null) => {
     setCurrentAudio(audio);
@@ -108,6 +113,35 @@ export default function AIFeaturesPanel({
 
   const handleGenerateSuccess = useCallback(() => {
     // Refresh generated content list
+    setRefreshKey((prev) => prev + 1);
+  }, []);
+
+  // Fetch access token on mount
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        // Try to get from cookie first
+        const cookieToken = getCookie("AUTH-TOKEN");
+        if (cookieToken) {
+          setAccessToken(cookieToken);
+          return;
+        }
+
+        // Fallback: fetch from API route
+        const response = await fetch("/api/auth/token");
+        if (response.ok) {
+          const data = await response.json();
+          setAccessToken(data.token);
+        }
+      } catch (error) {
+        console.error("Failed to get access token:", error);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  const handleRefetch = useCallback(() => {
     setRefreshKey((prev) => prev + 1);
   }, []);
 
@@ -218,6 +252,14 @@ export default function AIFeaturesPanel({
           selectedFileIds={selectedFileIds}
           onSuccess={handleGenerateSuccess}
         />
+
+        {/* WebSocket for AI Task Progress */}
+        <AiTaskWebSocket
+          notebookId={notebookId}
+          accessToken={accessToken}
+          role_name={user?.role || null}
+          onRefetch={handleRefetch}
+        />
       </div>
     );
   }
@@ -260,6 +302,14 @@ export default function AIFeaturesPanel({
           onAudioPlay={handleAudioPlay}
         />
       </div>
+
+      {/* WebSocket for AI Task Progress */}
+      <AiTaskWebSocket
+        notebookId={notebookId}
+        accessToken={accessToken}
+        role_name={user?.role || null}
+        onRefetch={handleRefetch}
+      />
 
       {/* Audio Player - hiển thị ở chân panel */}
       {currentAudio && (

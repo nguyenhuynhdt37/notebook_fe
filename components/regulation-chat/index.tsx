@@ -97,9 +97,9 @@ export default function RegulationChat() {
       {/* Main Content - Full Height */}
       <div className="flex-1 overflow-hidden">
         <div className="container max-w-7xl mx-auto px-6 py-6 h-full">
-          <div className="grid lg:grid-cols-[320px_1fr] gap-6 h-full">
+          <div className="grid lg:grid-cols-[320px_1fr] gap-0 h-full">
             {/* Sidebar - File List */}
-            <Card className="overflow-hidden h-full flex flex-col">
+            <Card className="overflow-hidden h-full flex flex-col rounded-r-none border-r-0">
               <RegulationFileList
                 selectedFileIds={selectedFileIds}
                 onSelectionChange={setSelectedFileIds}
@@ -107,7 +107,7 @@ export default function RegulationChat() {
             </Card>
 
             {/* Main - Chat Panel */}
-            <Card className="overflow-hidden h-full flex flex-col">
+            <Card className="overflow-hidden h-full flex flex-col rounded-l-none border-l">
               <RegulationChatPanel selectedFileIds={selectedFileIds} />
             </Card>
           </div>

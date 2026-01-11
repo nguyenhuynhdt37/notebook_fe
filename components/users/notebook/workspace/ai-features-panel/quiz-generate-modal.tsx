@@ -95,9 +95,14 @@ export default function QuizGenerateModal({
         params.append("additionalRequirements", additionalRequirements.trim());
       }
 
-      await api.post<GenerateQuizResponse>(
+      const response = await api.post<GenerateQuizResponse>(
         `/user/notebooks/${notebookId}/ai/quiz/generate?${params.toString()}`
       );
+
+      // Subscribe to task progress if aiSetId is available
+      if (response.data?.aiSetId && (window as any).__aiTaskWebSocket) {
+        (window as any).__aiTaskWebSocket.subscribe(response.data.aiSetId);
+      }
 
       // API 200 - đóng modal và thông báo
       toast.success(

@@ -209,15 +209,15 @@ export default function MessageList({
   // Listen for new messages (from input component)
   useEffect(() => {
     const handleNewMessage = (e: CustomEvent<ChatMessage>) => {
-      // Add to beginning of array (will be at bottom after reverse)
-      setMessages((prev) => [e.detail, ...prev]);
+      // Add to end of array (backend already sorted correctly)
+      setMessages((prev) => [...prev, e.detail]);
       // Mark that we should scroll to bottom for new user messages
       shouldScrollToBottomRef.current = true;
     };
 
     const handleLoadingMessage = (e: CustomEvent<ChatMessage>) => {
-      // Add to beginning of array (will be at bottom after reverse)
-      setMessages((prev) => [e.detail, ...prev]);
+      // Add to end of array (backend already sorted correctly)
+      setMessages((prev) => [...prev, e.detail]);
       // Mark that we should scroll to bottom for loading messages
       shouldScrollToBottomRef.current = true;
     };
@@ -274,7 +274,7 @@ export default function MessageList({
           </div>
         )}
 
-        {[...messages].reverse().map((message) => (
+        {messages.map((message) => (
           <MessageItem
             key={message.id}
             message={message}
@@ -282,6 +282,7 @@ export default function MessageList({
             copiedId={copiedId}
             onCopy={handleCopy}
             formatTime={formatTime}
+            notebookId={notebookId}
           />
         ))}
 
