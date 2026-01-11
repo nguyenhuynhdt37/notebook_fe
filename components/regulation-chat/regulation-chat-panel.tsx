@@ -185,6 +185,16 @@ export default function RegulationChatPanel({
                 role: msg.role,
                 content: msg.content,
                 timestamp: new Date(msg.createdAt),
+                sources: msg.sources && msg.sources.length > 0 ? msg.sources : undefined,
+                images: msg.files && msg.files.length > 0 
+                  ? msg.files.map((file) => ({
+                      id: file.id,
+                      fileUrl: file.fileUrl,
+                      fileName: file.fileName,
+                      mimeType: file.mimeType,
+                      ocrText: file.ocrText,
+                    }))
+                  : undefined,
               }))
             : [];
 

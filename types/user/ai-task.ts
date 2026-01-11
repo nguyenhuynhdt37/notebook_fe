@@ -160,3 +160,38 @@ export interface QuizOptionResponse {
 export type AiTaskType = AiSetType;
 export type AiTaskStatus = AiSetStatus;
 export type AiTaskResponse = AiSetResponse;
+
+// WebSocket Message Types
+export type AiTaskProgressStep =
+  | "queued"
+  | "processing"
+  | "summarizing"
+  | "generating"
+  | "saving"
+  | "completed"
+  | "error";
+
+export interface AiTaskProgressMessage {
+  aiSetId: string;
+  type: "progress" | "done" | "failed";
+  step: AiTaskProgressStep;
+  progress: number;
+  message: string;
+  setType?: AiSetType;
+  data?: Record<string, any>;
+}
+
+export interface AiTaskNotification {
+  aiSetId: string;
+  notebookId: string;
+  type: "created" | "done" | "deleted";
+  setType: AiSetType;
+  title: string;
+  status: AiSetStatus;
+  createdBy: {
+    id: string;
+    fullName: string;
+    avatarUrl?: string | null;
+  };
+  timestamp: string;
+}

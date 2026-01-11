@@ -60,15 +60,26 @@ export interface MessageFile {
   ocrText?: string;
 }
 
+// Source (nguồn trích dẫn) - theo API spec mới
 export interface MessageSource {
-  fileId: string;
-  fileName: string;
-  fileUrl?: string;
-  chunkIndex: number;
-  chunkContent: string;
-  similarity: number;
+  sourceType: "RAG" | "WEB";
+
+  // RAG fields
+  fileId?: string;
+  fileName?: string;
+  chunkIndex?: number;
+  content?: string; // Nội dung chunk trích dẫn
+  similarity?: number;
+  distance?: number;
+
+  // WEB fields
+  webIndex?: number;
+  url?: string;
+  title?: string;
+  snippet?: string;
+
+  // Common
   score?: number;
-  sourceType?: string;
   provider?: string;
 }
 
@@ -80,8 +91,10 @@ export interface MessageModel {
 
 export interface RegulationMessage {
   id: string;
+  conversationId: string;
   role: "user" | "assistant";
   content: string;
+  mode?: "RAG" | "WEB" | "HYBRID" | "LLM_ONLY";
   createdAt: string;
   files: MessageFile[];
   sources: MessageSource[];
@@ -90,23 +103,23 @@ export interface RegulationMessage {
 
 export interface RegulationMessagesResponse {
   items: RegulationMessage[];
-  cursorNext: string | null;
+  nextCursor: string | null;
   hasMore: boolean;
 }
 
-// Conversation types
+// Conversation types - theo API spec mới
 export interface RegulationConversation {
   id: string;
   title: string | null;
   notebookId: string;
-  userId: string;
-  isActive: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
+  firstMessage: string | null;
+  totalMessages: number;
 }
 
 export interface RegulationConversationsResponse {
-  conversations: RegulationConversation[];
-  cursorNext: string | null;
+  items: RegulationConversation[];
+  nextCursor: string | null;
   hasMore: boolean;
 }

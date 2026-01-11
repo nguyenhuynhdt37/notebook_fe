@@ -1,73 +1,36 @@
 "use client";
 
-import {
-  FileText,
-  Globe,
-  ExternalLink,
-  Copy,
-  Check,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { useState } from "react";
+import { FileText, Copy, Check, Quote, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { SourceResponse } from "@/types/user/chatbot";
 import { NotebookFileResponse } from "@/types/admin/notebook-file";
-import { useRef, useState, useEffect } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import api from "@/api/client/axios";
 
 interface SourcesHorizontalProps {
   sources?: NotebookFileResponse[];
   sourceDetails?: SourceResponse[];
+  notebookId?: string;
 }
 
 export default function SourcesHorizontal({
   sources = [],
   sourceDetails = [],
+  notebookId,
 }: SourcesHorizontalProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
+  const [loadingFileId, setLoadingFileId] = useState<string | null>(null);
 
-  const hasSources = sources.length > 0 || sourceDetails.length > 0;
-  if (!hasSources) return null;
-
+  // Filter only RAG sources (same as regulation-chat)
   const ragSources = sourceDetails.filter((s) => s.sourceType === "RAG");
-  const webSources = sourceDetails.filter((s) => s.sourceType === "WEB");
 
-  const checkScroll = () => {
-    const container = scrollRef.current;
-    if (!container) return;
-    setCanScrollLeft(container.scrollLeft > 0);
-    setCanScrollRight(
-      container.scrollLeft < container.scrollWidth - container.clientWidth - 1
-    );
-  };
-
-  useEffect(() => {
-    checkScroll();
-    const container = scrollRef.current;
-    if (container) {
-      container.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-      return () => {
-        container.removeEventListener("scroll", checkScroll);
-        window.removeEventListener("resize", checkScroll);
-      };
-    }
-  }, [sources, sourceDetails]);
-
-  const scroll = (direction: "left" | "right") => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const scrollAmount = 300;
-    container.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
-  };
+  if (!ragSources || ragSources.length === 0) return null;
 
   const handleCopy = async (text: string, id: string) => {
     try {
@@ -80,276 +43,122 @@ export default function SourcesHorizontal({
   };
 
   const formatScore = (score: number) => {
-    return `${(score * 100).toFixed(1)}%`;
+    return `${(score * 100).toFixed(0)}%`;
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "N/A";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+  const handleOpenFile = async (fileId: string) => {
+    if (!fileId || !notebookId || loadingFileId === fileId) return;
+
+    setLoadingFileId(fileId);
+    try {
+      // Get file info
+      const fileResponse = await api.get<NotebookFileResponse>(
+        `/user/notebooks/${notebookId}/files/user/files/${fileId}`
+      );
+
+      const file = fileResponse.data;
+      if (file.storageUrl) {
+        window.open(file.storageUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      console.error("Error loading file:", error);
+    } finally {
+      setLoadingFileId(null);
+    }
   };
 
   return (
-    <div className="relative group w-full max-w-full overflow-hidden">
-      {/* Scroll Buttons */}
-      {canScrollLeft && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/90 hover:bg-background  border border-border/50 rounded-full"
-          onClick={() => scroll("left")}
-        >
-          <ChevronLeft className="size-4" />
-        </Button>
-      )}
-      {canScrollRight && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/90 hover:bg-background  border border-border/50 rounded-full"
-          onClick={() => scroll("right")}
-        >
-          <ChevronRight className="size-4" />
-        </Button>
-      )}
-
-      {/* Scrollable Container */}
-      <div
-        ref={scrollRef}
-        className="flex gap-2.5 overflow-x-auto scroll-smooth px-1 py-1 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      >
-        {/* RAG Sources */}
+    <div className="w-full overflow-x-auto overflow-y-hidden">
+      <div className="flex gap-2 pb-2 min-w-max">
         {ragSources.map((source, index) => {
-          const fileSource = sources.find((s) => s.id === source.fileId);
-          const sourceId = `rag-${source.fileId}-${index}`;
+          const sourceId = `source-${source.fileId}-${index}`;
           return (
-            <div
-              key={sourceId}
-              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[320px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300  overflow-hidden"
-            >
-              <div className="flex items-start gap-2.5">
-                <FileText className="size-4 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm text-foreground truncate mb-1.5">
-                    {fileSource?.originalFilename ||
-                      source.fileId ||
-                      "Tài liệu không xác định"}
-                  </h4>
-
-                  {/* Details - Hidden by default, shown on hover */}
-                  <div className="opacity-0 group-hover/source:opacity-100 max-h-0 group-hover/source:max-h-[500px] transition-all duration-300 overflow-hidden space-y-2">
-                    {fileSource && (
-                      <div className="flex flex-wrap gap-1.5 mb-2 text-xs text-muted-foreground">
-                        {fileSource.mimeType && (
-                          <span className="truncate">
-                            {fileSource.mimeType}
-                          </span>
-                        )}
-                        {fileSource.fileSize > 0 && (
-                          <span>• {formatFileSize(fileSource.fileSize)}</span>
-                        )}
-                        {fileSource.pagesCount !== null && (
-                          <span>• {fileSource.pagesCount} trang</span>
-                        )}
-                      </div>
-                    )}
-
-                    {source.chunkIndex !== null &&
-                      source.chunkIndex !== undefined && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs mb-2 border-primary/30 bg-primary/5"
-                        >
-                          Chunk #{source.chunkIndex}
-                        </Badge>
-                      )}
-
-                    {source.content && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            Trích dẫn:
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-5"
-                            onClick={() =>
-                              handleCopy(source.content || "", sourceId)
-                            }
-                          >
-                            {copiedIndex === sourceId ? (
-                              <Check className="size-3 text-primary" />
-                            ) : (
-                              <Copy className="size-3" />
-                            )}
-                          </Button>
-                        </div>
-                        <div className="rounded-lg bg-background/60 border border-border/50 p-2.5 text-xs leading-relaxed text-foreground/90 max-h-24 overflow-y-auto">
-                          {source.content}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-border/30">
-                      {source.similarity !== null &&
-                        source.similarity !== undefined && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs gap-1 border-primary/30 bg-primary/5"
-                          >
-                            <Sparkles className="size-2.5" />
-                            {formatScore(source.similarity)}
-                          </Badge>
-                        )}
-                      {source.score !== null && source.score !== undefined && (
-                        <Badge variant="outline" className="text-xs">
-                          Điểm: {formatScore(source.score)}
-                        </Badge>
-                      )}
+            <Popover key={sourceId}>
+              <PopoverTrigger asChild>
+                <div className="shrink-0 w-[160px] cursor-pointer group">
+                  <div className="bg-muted/50 hover:bg-muted border border-border/50 rounded-lg p-2 transition-colors flex items-center gap-2 h-9">
+                    <div className="shrink-0 text-primary">
+                      <FileText className="size-3.5" />
                     </div>
+                    <span className="text-xs font-medium truncate text-foreground/80 group-hover:text-foreground transition-colors flex-1 min-w-0">
+                      {source.fileName || source.fileId || "Tài liệu"}
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="h-5 px-1.5 text-[10px] bg-background/50 text-muted-foreground font-normal shrink-0"
+                    >
+                      {index + 1}
+                    </Badge>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Web Sources */}
-        {webSources.map((source, index) => {
-          const sourceId = `web-${index}`;
-          return (
-            <div
-              key={sourceId}
-              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[320px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300  overflow-hidden"
-            >
-              <div className="flex items-start gap-2.5">
-                {source.favicon ? (
-                  <img
-                    src={source.favicon}
-                    alt=""
-                    className="size-4 rounded shrink-0 mt-0.5"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <Globe className="size-4 text-primary shrink-0 mt-0.5" />
-                )}
-                <div className="flex-1 min-w-0">
-                  {source.title && (
-                    <h4 className="font-semibold text-sm text-foreground truncate mb-1.5">
-                      {source.title}
-                    </h4>
-                  )}
-
-                  {/* Details - Hidden by default, shown on hover */}
-                  <div className="opacity-0 group-hover/source:opacity-100 max-h-0 group-hover/source:max-h-[500px] transition-all duration-300 overflow-hidden space-y-2">
-                    {source.url && (
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline flex items-center gap-1 mb-2 truncate"
+              </PopoverTrigger>
+              <PopoverContent className="w-[320px] p-0" align="start">
+                <div className="p-3 space-y-3">
+                  {/* Header */}
+                  <div className="flex items-start gap-3">
+                    <div className="bg-primary/10 p-2 rounded-md shrink-0">
+                      <FileText className="size-4 text-primary" />
+                    </div>
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <h4
+                        className="font-semibold text-sm leading-none wrap-break-word cursor-pointer hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (source.fileId) {
+                            handleOpenFile(source.fileId);
+                          }
+                        }}
                       >
-                        <ExternalLink className="size-3 shrink-0" />
-                        <span className="truncate">{source.url}</span>
-                      </a>
-                    )}
-
-                    {source.snippet && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            Mô tả:
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-5"
-                            onClick={() =>
-                              handleCopy(source.snippet || "", sourceId)
-                            }
-                          >
-                            {copiedIndex === sourceId ? (
-                              <Check className="size-3 text-primary" />
-                            ) : (
-                              <Copy className="size-3" />
-                            )}
-                          </Button>
-                        </div>
-                        <div className="rounded-lg bg-background/60 border border-border/50 p-2.5 text-xs leading-relaxed text-foreground/90 max-h-24 overflow-y-auto">
-                          {source.snippet}
-                        </div>
-                      </div>
-                    )}
-
-                    {source.imageUrl && (
-                      <div className="mt-2">
-                        <img
-                          src={source.imageUrl}
-                          alt={source.title || "Preview"}
-                          className="rounded-lg w-full h-auto max-h-32 object-cover border border-border/50"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-border/30">
-                      {source.webIndex !== null &&
-                        source.webIndex !== undefined && (
-                          <Badge variant="outline" className="text-xs">
-                            #{source.webIndex + 1}
-                          </Badge>
-                        )}
-                      {source.score !== null && source.score !== undefined && (
-                        <Badge variant="outline" className="text-xs gap-1">
-                          <Sparkles className="size-2.5" />
-                          {formatScore(source.score)}
-                        </Badge>
+                        {source.fileName || source.fileId || "Tài liệu"}
+                      </h4>
+                      {loadingFileId === source.fileId && (
+                        <Loader2 className="size-3 animate-spin text-muted-foreground" />
                       )}
                     </div>
                   </div>
+
+                  {/* Chunk Content */}
+                  <div className="bg-muted/30 rounded-lg p-3 space-y-2 border border-border/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Quote className="size-3 text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Trích dẫn (Đoạn #{source.chunkIndex})
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 hover:bg-background"
+                        onClick={() =>
+                          handleCopy(source.content || "", sourceId)
+                        }
+                      >
+                        {copiedIndex === sourceId ? (
+                          <Check className="size-3 text-primary" />
+                        ) : (
+                          <Copy className="size-3 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                    <div className="text-sm leading-relaxed text-foreground/90 max-h-[200px] overflow-y-auto pr-1">
+                      {source.content}
+                    </div>
+                  </div>
+
+                  {/* Similarity Score */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Độ tương đồng</span>
+                    <Badge variant="outline" className="font-mono text-[10px]">
+                      {formatScore(source.similarity ?? source.score ?? 0)}{" "}
+                      match
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </PopoverContent>
+            </Popover>
           );
         })}
-
-        {/* Fallback: Basic sources if no sourceDetails */}
-        {sourceDetails.length === 0 &&
-          sources.map((source) => (
-            <div
-              key={source.id}
-              className="group/source flex-shrink-0 w-[180px] min-w-[180px] hover:w-[240px] rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/40 transition-all duration-300  overflow-hidden"
-            >
-              <div className="flex items-start gap-2.5">
-                <FileText className="size-4 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm text-foreground truncate mb-1.5">
-                    {source.originalFilename}
-                  </h4>
-                  {/* Details - Hidden by default, shown on hover */}
-                  <div className="opacity-0 group-hover/source:opacity-100 max-h-0 group-hover/source:max-h-[200px] transition-all duration-300 overflow-hidden">
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      {source.mimeType && <div>{source.mimeType}</div>}
-                      {source.fileSize > 0 && (
-                        <div>{formatFileSize(source.fileSize)}</div>
-                      )}
-                      {source.pagesCount !== null && (
-                        <div>{source.pagesCount} trang</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
       </div>
     </div>
   );

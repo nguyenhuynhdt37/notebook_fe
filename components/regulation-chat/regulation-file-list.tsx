@@ -83,7 +83,7 @@ export default function RegulationFileList({
 
   return (
     <>
-      <CardHeader className="border-b space-y-2 pb-3 flex-shrink-0">
+      <CardHeader className="border-b space-y-2 pb-3 shrink-0">
         <div className="space-y-0.5">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Danh sách tài liệu</CardTitle>
@@ -156,7 +156,7 @@ export default function RegulationFileList({
                     className={cn(
                       "p-3 rounded-lg transition-all duration-200 border",
                       isSelected
-                        ? "bg-primary/[0.03] border-primary/20 shadow-sm"
+                        ? "bg-primary/3 border-primary/20 shadow-sm"
                         : "border-transparent hover:border-accent hover:bg-accent/30"
                     )}
                     onClick={() => handleToggleFile(file.id)}
@@ -167,14 +167,16 @@ export default function RegulationFileList({
                           id={`file-${file.id}`}
                           checked={isSelected}
                           onCheckedChange={() => handleToggleFile(file.id)}
-                          className="mt-0.5 flex-shrink-0"
+                          className="mt-0.5 shrink-0"
+                          onClick={(e) => e.stopPropagation()}
                         />
-                        <FileText className="size-4 mt-0.5 text-primary flex-shrink-0" />
+                        <FileText className="size-4 mt-0.5 text-primary shrink-0" />
                         <a
                           href={file.storageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 min-w-0 text-left group"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <p className="text-sm font-medium line-clamp-2 leading-tight group-hover:underline break-all">
                             {file.originalFilename}

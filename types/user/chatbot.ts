@@ -30,6 +30,7 @@ export interface ChatHistoryResponse {
 export interface SourceResponse {
   sourceType: "RAG" | "WEB";
   fileId?: string | null;
+  fileName?: string | null;
   chunkIndex?: number | null;
   content?: string | null;
   similarity?: number | null;
