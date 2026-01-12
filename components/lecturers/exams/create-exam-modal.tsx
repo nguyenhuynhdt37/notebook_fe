@@ -392,8 +392,6 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
                   value={formData.durationMinutes}
                   onChange={(e) => handleInputChange("durationMinutes", parseInt(e.target.value))}
                   className="pl-9"
-                  min="1"
-                  max="300"
                 />
               </div>
             </div>
@@ -424,8 +422,6 @@ export function CreateExamModal({ open, onOpenChange, onSuccess }: CreateExamMod
                   type="number"
                   value={formData.maxAttempts}
                   onChange={(e) => handleInputChange("maxAttempts", parseInt(e.target.value))}
-                  min="1"
-                  max="10"
                 />
               </div>
             </div>

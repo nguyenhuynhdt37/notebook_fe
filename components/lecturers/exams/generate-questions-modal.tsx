@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, Sparkles, Settings, BookOpen, Search, ExternalLink } from "lucide-react";
+import { Sparkles, Settings, BookOpen, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -291,12 +290,10 @@ export function GenerateQuestionsModal({
   };
 
   const questionTypes = [
-    { value: "MCQ", label: "Trắc nghiệm", description: "Câu hỏi nhiều lựa chọn" },
-    { value: "TRUE_FALSE", label: "Đúng/Sai", description: "Câu hỏi đúng hoặc sai" },
-    { value: "ESSAY", label: "Tự luận", description: "Câu hỏi tự luận ngắn" },
-    { value: "CODING", label: "Lập trình", description: "Câu hỏi code" },
-    { value: "FILL_BLANK", label: "Điền khuyết", description: "Điền vào chỗ trống" },
-    { value: "MATCHING", label: "Ghép đôi", description: "Ghép cặp đáp án" },
+    { value: "MCQ", label: "Trắc nghiệm" },
+    { value: "TRUE_FALSE", label: "Đúng/Sai" },
+    { value: "ESSAY", label: "Tự luận" },
+    { value: "FILL_BLANK", label: "Điền khuyết" },
   ];
 
   const difficultyLevels: { value: DifficultyLevel; label: string }[] = [
@@ -306,74 +303,84 @@ export function GenerateQuestionsModal({
     { value: "MIXED", label: "Hỗn hợp" },
   ];
 
+  const selectedNotebookData = notebooks.find(n => n.id === selectedNotebook);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg">
             <Sparkles className="h-5 w-5" />
             Tạo câu hỏi tự động bằng AI
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Tabs defaultValue="source" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="source">Chọn nguồn tài liệu</TabsTrigger>
-              <TabsTrigger value="config">Cấu hình câu hỏi</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-9">
+              <TabsTrigger value="source" className="text-xs">Chọn nguồn tài liệu</TabsTrigger>
+              <TabsTrigger value="config" className="text-xs">Cấu hình câu hỏi</TabsTrigger>
             </TabsList>
 
             {/* Source Selection Tab */}
-            <TabsContent value="source" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <BookOpen className="h-5 w-5" />
-                    Chọn Notebook
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {isLoading && !selectedNotebook ? (
-                    <div className="text-center py-8">
-                      <div className="text-muted-foreground">Đang tải danh sách notebook...</div>
-                    </div>
-                  ) : notebooks.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="text-muted-foreground">Không có notebook nào</div>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => {
-                          onOpenChange(false);
-                          router.push('/lecturer/file-management');
-                        }}
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Đi đến Quản lý Files
-                      </Button>
-                    </div>
-                  ) : (
-                    <Select value={selectedNotebook} onValueChange={setSelectedNotebook}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn notebook..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {notebooks.map((notebook) => (
-                          <SelectItem key={notebook.id} value={notebook.id}>
-                            <div className="flex flex-col">
-                              <span>{notebook.title}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {notebook.readyFiles}/{notebook.totalFiles} files sẵn sàng • {notebook.className || notebook.type}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </CardContent>
-              </Card>
+            <TabsContent value="source" className="space-y-4 mt-4">
+              {/* Notebook Selection */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">Chọn Notebook</Label>
+                </div>
+                
+                {isLoading && !selectedNotebook ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : notebooks.length === 0 ? (
+                  <div className="text-center py-6 border rounded-lg border-dashed">
+                    <p className="text-sm text-muted-foreground mb-2">Không có notebook nào</p>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        onOpenChange(false);
+                        router.push('/lecturer/file-management');
+                      }}
+                    >
+                      Đi đến Quản lý Files
+                    </Button>
+                  </div>
+                ) : (
+                  <Select value={selectedNotebook} onValueChange={setSelectedNotebook}>
+                    <SelectTrigger className="h-auto py-2">
+                      <SelectValue placeholder="Chọn notebook...">
+                        {selectedNotebookData && (
+                          <div className="flex items-center gap-2 text-left">
+                            <span>{selectedNotebookData.title}</span>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {selectedNotebookData.readyFiles}/{selectedNotebookData.totalFiles} files
+                            </Badge>
+                          </div>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {notebooks.map((notebook) => (
+                        <SelectItem key={notebook.id} value={notebook.id}>
+                          <div className="flex flex-col py-0.5">
+                            <span className="font-medium">{notebook.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {notebook.readyFiles}/{notebook.totalFiles} files sẵn sàng • {notebook.className || notebook.type}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
 
+              {/* File Manager */}
               {selectedNotebook && (
                 <FileManager
                   notebookId={selectedNotebook}
@@ -389,225 +396,226 @@ export function GenerateQuestionsModal({
             </TabsContent>
 
             {/* Configuration Tab */}
-            <TabsContent value="config" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Settings className="h-5 w-5" />
-                    Cấu hình câu hỏi
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Basic Settings */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="numberOfQuestions">Số lượng câu hỏi</Label>
+            <TabsContent value="config" className="space-y-4 mt-4">
+              {/* Basic Settings */}
+              <div className="flex items-center gap-2 mb-3">
+                <Settings className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Cấu hình câu hỏi</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="numberOfQuestions" className="text-xs">Số lượng câu hỏi</Label>
+                  <Input
+                    id="numberOfQuestions"
+                    type="number"
+                    value={formData.numberOfQuestions}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      numberOfQuestions: parseInt(e.target.value) || 0
+                    }))}
+                    className="h-9"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="difficultyLevel" className="text-xs">Độ khó</Label>
+                  <Select
+                    value={formData.difficultyLevel}
+                    onValueChange={(value: DifficultyLevel) => 
+                      setFormData(prev => ({ ...prev, difficultyLevel: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {difficultyLevels.map((level) => (
+                        <SelectItem key={level.value} value={level.value}>
+                          {level.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Question Types */}
+              <div className="space-y-2">
+                <Label className="text-xs">Loại câu hỏi</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {questionTypes.map((type) => (
+                    <div 
+                      key={type.value} 
+                      className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors
+                        ${formData.questionTypes.includes(type.value) 
+                          ? 'border-foreground/30 bg-accent' 
+                          : 'hover:bg-muted/50'}`}
+                      onClick={() => handleQuestionTypeToggle(type.value, !formData.questionTypes.includes(type.value))}
+                    >
+                      <Checkbox
+                        checked={formData.questionTypes.includes(type.value)}
+                        onCheckedChange={(checked) => handleQuestionTypeToggle(type.value, checked as boolean)}
+                      />
+                      <span className="text-sm">{type.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* MCQ Options */}
+              {formData.questionTypes.includes("MCQ") && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Số lựa chọn trắc nghiệm</Label>
+                  <Select
+                    value={formData.mcqOptionsCount.toString()}
+                    onValueChange={(value) => 
+                      setFormData(prev => ({ ...prev, mcqOptionsCount: parseInt(value) }))
+                    }
+                  >
+                    <SelectTrigger className="h-9 w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[2, 3, 4, 5, 6].map(n => (
+                        <SelectItem key={n} value={n.toString()}>{n} lựa chọn</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Additional Options */}
+              <div 
+                className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors
+                  ${formData.includeExplanation ? 'border-foreground/30 bg-accent' : 'hover:bg-muted/50'}`}
+                onClick={() => setFormData(prev => ({ ...prev, includeExplanation: !prev.includeExplanation }))}
+              >
+                <Checkbox
+                  checked={formData.includeExplanation}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, includeExplanation: checked as boolean }))
+                  }
+                />
+                <span className="text-sm">Bao gồm giải thích đáp án</span>
+              </div>
+
+              {/* Difficulty Distribution */}
+              {formData.difficultyLevel === "MIXED" && (
+                <div className="space-y-2 p-3 rounded-lg bg-muted/50">
+                  <Label className="text-xs">Phân bố độ khó (%)</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Dễ</Label>
                       <Input
-                        id="numberOfQuestions"
                         type="number"
-                        value={formData.numberOfQuestions}
+                        value={formData.easyPercentage}
                         onChange={(e) => setFormData(prev => ({ 
                           ...prev, 
-                          numberOfQuestions: parseInt(e.target.value) || 0
+                          easyPercentage: parseInt(e.target.value) || 0
                         }))}
-                        min="1"
+                        min="0"
                         max="100"
+                        className="h-8 text-center"
                       />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="difficultyLevel">Độ khó</Label>
-                      <Select
-                        value={formData.difficultyLevel}
-                        onValueChange={(value: DifficultyLevel) => 
-                          setFormData(prev => ({ ...prev, difficultyLevel: value }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {difficultyLevels.map((level) => (
-                            <SelectItem key={level.value} value={level.value}>
-                              {level.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">TB</Label>
+                      <Input
+                        type="number"
+                        value={formData.mediumPercentage}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          mediumPercentage: parseInt(e.target.value) || 0
+                        }))}
+                        min="0"
+                        max="100"
+                        className="h-8 text-center"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Khó</Label>
+                      <Input
+                        type="number"
+                        value={formData.hardPercentage}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          hardPercentage: parseInt(e.target.value) || 0
+                        }))}
+                        min="0"
+                        max="100"
+                        className="h-8 text-center"
+                      />
                     </div>
                   </div>
-
-                  {/* Question Types */}
-                  <div className="space-y-3">
-                    <Label>Loại câu hỏi</Label>
-                    <div className="grid gap-3">
-                      {questionTypes.map((type) => (
-                        <div key={type.value} className="flex items-center space-x-3">
-                          <Checkbox
-                            id={type.value}
-                            checked={formData.questionTypes.includes(type.value)}
-                            onCheckedChange={(checked) => 
-                              handleQuestionTypeToggle(type.value, checked as boolean)
-                            }
-                          />
-                          <div>
-                            <Label htmlFor={type.value} className="font-medium cursor-pointer">
-                              {type.label}
-                            </Label>
-                            <p className="text-sm text-muted-foreground">{type.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* MCQ Options */}
-                  {formData.questionTypes.includes("MCQ") && (
-                    <div className="space-y-2">
-                      <Label htmlFor="mcqOptionsCount">Số lựa chọn cho câu trắc nghiệm</Label>
-                      <Select
-                        value={formData.mcqOptionsCount.toString()}
-                        onValueChange={(value) => 
-                          setFormData(prev => ({ ...prev, mcqOptionsCount: parseInt(value) }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2">2 lựa chọn</SelectItem>
-                          <SelectItem value="3">3 lựa chọn</SelectItem>
-                          <SelectItem value="4">4 lựa chọn</SelectItem>
-                          <SelectItem value="5">5 lựa chọn</SelectItem>
-                          <SelectItem value="6">6 lựa chọn</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Additional Options */}
-                  <div className="space-y-3">
-                    <Label>Tùy chọn bổ sung</Label>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="includeExplanation"
-                          checked={formData.includeExplanation}
-                          onCheckedChange={(checked) => 
-                            setFormData(prev => ({ ...prev, includeExplanation: checked as boolean }))
-                          }
-                        />
-                        <Label htmlFor="includeExplanation">Bao gồm giải thích đáp án</Label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Difficulty Distribution */}
-                  {formData.difficultyLevel === "MIXED" && (
-                    <div className="space-y-4">
-                      <Label>Phân bố độ khó (%)</Label>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-4">
-                          <Label className="w-20">Dễ:</Label>
-                          <Input
-                            type="number"
-                            value={formData.easyPercentage}
-                            onChange={(e) => setFormData(prev => ({ 
-                              ...prev, 
-                              easyPercentage: parseInt(e.target.value) || 0
-                            }))}
-                            min="0"
-                            max="100"
-                            className="w-20"
-                          />
-                          <span className="text-sm text-muted-foreground">%</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Label className="w-20">Trung bình:</Label>
-                          <Input
-                            type="number"
-                            value={formData.mediumPercentage}
-                            onChange={(e) => setFormData(prev => ({ 
-                              ...prev, 
-                              mediumPercentage: parseInt(e.target.value) || 0
-                            }))}
-                            min="0"
-                            max="100"
-                            className="w-20"
-                          />
-                          <span className="text-sm text-muted-foreground">%</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Label className="w-20">Khó:</Label>
-                          <Input
-                            type="number"
-                            value={formData.hardPercentage}
-                            onChange={(e) => setFormData(prev => ({ 
-                              ...prev, 
-                              hardPercentage: parseInt(e.target.value) || 0
-                            }))}
-                            min="0"
-                            max="100"
-                            className="w-20"
-                          />
-                          <span className="text-sm text-muted-foreground">%</span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Tổng: {formData.easyPercentage + formData.mediumPercentage + formData.hardPercentage}%
-                          {formData.easyPercentage + formData.mediumPercentage + formData.hardPercentage !== 100 && (
-                            <span className="text-red-500 ml-2">
-                              (Phải bằng 100%)
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  <p className={`text-xs ${
+                    formData.easyPercentage + formData.mediumPercentage + formData.hardPercentage === 100 
+                      ? 'text-green-600' 
+                      : 'text-red-500'
+                  }`}>
+                    Tổng: {formData.easyPercentage + formData.mediumPercentage + formData.hardPercentage}%
+                    {formData.easyPercentage + formData.mediumPercentage + formData.hardPercentage !== 100 && " (cần = 100%)"}
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
           {/* Generation Progress */}
           {isGenerating && (
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 animate-spin" />
-                    <span className="font-medium">
-                      {progress < 25 && "Đang xử lý files..."}
-                      {progress >= 25 && progress < 50 && "Đang phân tích nội dung..."}
-                      {progress >= 50 && progress < 75 && "Đang tạo câu hỏi..."}
-                      {progress >= 75 && progress < 100 && "Đang xử lý kết quả..."}
-                      {progress >= 100 && "Hoàn thành!"}
-                    </span>
-                  </div>
-                  <Progress value={progress} className="w-full" />
-                  <p className="text-sm text-muted-foreground">
-                    AI đang phân tích nội dung và tạo câu hỏi. Quá trình này có thể mất vài phút.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="p-4 rounded-lg border bg-muted/30 space-y-3">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm font-medium">
+                  {progress < 50 ? "Đang phân tích nội dung..." : 
+                   progress < 100 ? "Đang tạo câu hỏi..." : "Hoàn thành!"}
+                </span>
+              </div>
+              <Progress value={progress} className="h-1.5" />
+              <p className="text-xs text-muted-foreground">
+                AI đang xử lý. Quá trình này có thể mất vài phút.
+              </p>
+            </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isGenerating}
-            >
-              Hủy
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isGenerating || selectedFiles.length === 0}
-            >
-              {isGenerating ? "Đang tạo..." : "Tạo câu hỏi"}
-            </Button>
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="text-xs text-muted-foreground">
+              {selectedFiles.length > 0 && (
+                <span className="flex items-center gap-1">
+                  <Check className="h-3 w-3 text-green-600" />
+                  {selectedFiles.length} file đã chọn
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                disabled={isGenerating}
+              >
+                Hủy
+              </Button>
+              <Button 
+                type="submit" 
+                size="sm"
+                disabled={isGenerating || selectedFiles.length === 0}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                    Tạo câu hỏi
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

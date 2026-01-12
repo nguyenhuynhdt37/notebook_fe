@@ -133,8 +133,6 @@ export function CreateExamForm({ classId, onSuccess }: CreateExamFormProps) {
                   type="number"
                   value={formData.durationMinutes}
                   onChange={(e) => setFormData(prev => ({ ...prev, durationMinutes: parseInt(e.target.value) || 0 }))}
-                  min="1"
-                  max="600"
                 />
               </div>
 
@@ -145,9 +143,6 @@ export function CreateExamForm({ classId, onSuccess }: CreateExamFormProps) {
                   type="number"
                   value={formData.passingScore}
                   onChange={(e) => setFormData(prev => ({ ...prev, passingScore: parseFloat(e.target.value) || 0 }))}
-                  min="0"
-                  max="100"
-                  step="0.1"
                 />
               </div>
 
@@ -158,8 +153,6 @@ export function CreateExamForm({ classId, onSuccess }: CreateExamFormProps) {
                   type="number"
                   value={formData.maxAttempts}
                   onChange={(e) => setFormData(prev => ({ ...prev, maxAttempts: parseInt(e.target.value) || 1 }))}
-                  min="1"
-                  max="10"
                 />
               </div>
             </div>

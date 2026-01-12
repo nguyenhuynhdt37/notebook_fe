@@ -1,11 +1,13 @@
 import { ExamTaking } from "@/components/users/exams/exam-taking";
+import { use } from "react";
 
 interface ExamTakingPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ExamTakingPage({ params }: ExamTakingPageProps) {
-  return <ExamTaking examId={params.id} />;
+  const resolvedParams = use(params);
+  return <ExamTaking examId={resolvedParams.id} />;
 }

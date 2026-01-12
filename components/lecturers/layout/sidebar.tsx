@@ -13,7 +13,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  FolderPlus,
   BookOpenCheck,
   Files,
 } from "lucide-react";
@@ -36,7 +35,6 @@ const navItems: NavItem[] = [
     icon: GraduationCap,
   },
   { title: "Lớp học phần", href: "/lecturer/classes", icon: BookOpen },
-  { title: "Quản lý lớp", href: "/lecturer/class-management", icon: FolderPlus },
   { title: "Quản lý Files", href: "/lecturer/file-management", icon: Files },
   { title: "Bài kiểm tra", href: "/lecturer/exams", icon: BookOpenCheck },
   { title: "Sinh viên", href: "/lecturer/students", icon: Users },
@@ -92,7 +90,7 @@ export default function LecturerSidebar() {
           className={cn(
             "size-7",
             collapsed &&
-              "absolute -right-3.5 bg-background border border-border/50"
+            "absolute -right-3.5 bg-background border border-border/50"
           )}
           onClick={() => setCollapsed(!collapsed)}
         >

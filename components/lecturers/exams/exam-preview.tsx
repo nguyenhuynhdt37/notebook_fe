@@ -14,7 +14,7 @@ import examApi from "@/api/client/exam";
 import { ExamDetailResponse, Question } from "@/types/lecturer/exam";
 import { GenerateQuestionsModal } from "./generate-questions-modal";
 import { ExamStatusManager } from "./exam-status-manager";
-import { DebugGenerateQuestions } from "./debug-generate-questions";
+import { ExamResults } from "./exam-results";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -31,7 +31,7 @@ const statusConfig = {
 
 const questionTypeLabels = {
   MCQ: "Trắc nghiệm",
-  TRUE_FALSE: "Đúng/Sai", 
+  TRUE_FALSE: "Đúng/Sai",
   ESSAY: "Tự luận",
   CODING: "Lập trình",
   FILL_BLANK: "Điền khuyết",
@@ -47,7 +47,7 @@ const difficultyLabels = {
 
 const difficultyColors = {
   EASY: "bg-green-100 text-green-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800", 
+  MEDIUM: "bg-yellow-100 text-yellow-800",
   HARD: "bg-red-100 text-red-800",
   MIXED: "bg-blue-100 text-blue-800",
 };
@@ -141,7 +141,7 @@ export default function ExamPreview({ examId }: ExamPreviewProps) {
             </div>
           </div>
         </div>
-        
+
         {exam.status === "DRAFT" && (
           <div className="flex gap-2">
             <Button onClick={() => setShowGenerateModal(true)}>
@@ -309,9 +309,9 @@ export default function ExamPreview({ examId }: ExamPreviewProps) {
           ) : (
             <div className="space-y-4">
               {exam.questions.map((question, index) => (
-                <QuestionCard 
-                  key={question.id} 
-                  question={question} 
+                <QuestionCard
+                  key={question.id}
+                  question={question}
                   index={index + 1}
                   canEdit={exam.status === "DRAFT"}
                 />
@@ -332,12 +332,7 @@ export default function ExamPreview({ examId }: ExamPreviewProps) {
 
         {/* Results Tab */}
         <TabsContent value="results">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Tính năng xem kết quả sẽ có sớm</p>
-            </CardContent>
-          </Card>
+          <ExamResults examId={examId} />
         </TabsContent>
 
         {/* Settings Tab */}
@@ -358,21 +353,16 @@ export default function ExamPreview({ examId }: ExamPreviewProps) {
         onOpenChange={setShowGenerateModal}
         onSuccess={handleGenerateSuccess}
       />
-
-      {/* Debug Component - Remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <DebugGenerateQuestions examId={examId} />
-      )}
     </div>
   );
 }
 
-function QuestionCard({ 
-  question, 
-  index, 
-  canEdit 
-}: { 
-  question: Question; 
+function QuestionCard({
+  question,
+  index,
+  canEdit
+}: {
+  question: Question;
   index: number;
   canEdit: boolean;
 }) {
@@ -398,7 +388,7 @@ function QuestionCard({
               </div>
             </div>
           </div>
-          
+
           {canEdit && (
             <div className="flex gap-1">
               <Button variant="ghost" size="sm">
@@ -411,7 +401,7 @@ function QuestionCard({
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="prose prose-sm max-w-none">
           <p className="font-medium">{question.questionText}</p>
@@ -422,13 +412,12 @@ function QuestionCard({
             <p className="text-sm font-medium text-muted-foreground">Các lựa chọn:</p>
             <div className="space-y-2">
               {question.options.map((option, optionIndex) => (
-                <div 
+                <div
                   key={option.id}
-                  className={`flex items-center gap-2 p-2 rounded border ${
-                    option.isCorrect 
-                      ? "bg-green-50 border-green-200" 
-                      : "bg-muted/30"
-                  }`}
+                  className={`flex items-center gap-2 p-2 rounded border ${option.isCorrect
+                    ? "bg-green-50 border-green-200"
+                    : "bg-muted/30"
+                    }`}
                 >
                   <div className="flex h-6 w-6 items-center justify-center rounded-full border text-xs">
                     {String.fromCharCode(65 + optionIndex)}

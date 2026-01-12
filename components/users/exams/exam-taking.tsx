@@ -23,7 +23,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-  
+
   const {
     currentExam,
     answers,
@@ -66,12 +66,12 @@ export function ExamTaking({ examId }: ExamTakingProps) {
         incrementCopyPaste();
         toast.warning("Sao chép/dán đã bị vô hiệu hóa");
       }
-      
+
       // Disable F12, Ctrl+Shift+I, etc.
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'C') ||
-          (e.ctrlKey && e.key === 'u')) {
+      if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+        (e.ctrlKey && e.key === 'u')) {
         e.preventDefault();
         toast.warning("Công cụ phát triển đã bị vô hiệu hóa");
       }
@@ -110,18 +110,19 @@ export function ExamTaking({ examId }: ExamTakingProps) {
 
   // Timer countdown
   useEffect(() => {
-    if (!isExamActive || timeRemaining <= 0) return;
+    if (!isExamActive || isSubmitting) return;
+
+    if (timeRemaining <= 0) {
+      handleAutoSubmit();
+      return;
+    }
 
     const timer = setInterval(() => {
       setTimeRemaining(timeRemaining - 1);
-      
-      if (timeRemaining <= 1) {
-        handleAutoSubmit();
-      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, isExamActive]);
+  }, [timeRemaining, isExamActive, isSubmitting]);
 
   // Track time spent on current question
   useEffect(() => {
@@ -131,7 +132,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
   const handleAnswerChange = useCallback((questionId: string, answerData: any, confidence: "LOW" | "MEDIUM" | "HIGH") => {
     const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
     const existingAnswer = answers[questionId];
-    
+
     const answer: StudentAnswer = {
       questionId,
       answerData,
@@ -147,10 +148,10 @@ export function ExamTaking({ examId }: ExamTakingProps) {
 
   const handleSkipQuestion = () => {
     if (!currentExam) return;
-    
+
     const question = currentExam.questions[currentQuestionIndex];
     const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
-    
+
     if (!answers[question.questionId]) {
       const answer: StudentAnswer = {
         questionId: question.questionId,
@@ -171,7 +172,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
 
   const handleAutoSubmit = async () => {
     if (!currentExam) return;
-    
+
     toast.info("Hết thời gian! Đang tự động nộp bài...");
     await submitExam(true);
   };
@@ -187,7 +188,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
     try {
       // Calculate total time spent
       const totalTimeSpent = currentExam.durationMinutes * 60 - timeRemaining;
-      
+
       // Prepare answers array
       const answersArray = currentExam.questions.map(question => {
         const answer = answers[question.questionId];
@@ -212,18 +213,18 @@ export function ExamTaking({ examId }: ExamTakingProps) {
       };
 
       await examApi.submitExam(examId, submitData);
-      
+
       // Clear exam data and navigate to result
       clearExamData();
       setExamActive(false);
-      
+
       // Exit fullscreen
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(console.error);
       }
-      
+
       router.push(`/exams/${examId}/result`);
-      
+
     } catch (error) {
       console.error("Error submitting exam:", error);
       toast.error("Không thể nộp bài. Vui lòng thử lại.");
@@ -262,10 +263,10 @@ export function ExamTaking({ examId }: ExamTakingProps) {
                 Câu {currentQuestionIndex + 1} / {currentExam.questions.length}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <Timer timeRemaining={timeRemaining} />
-              <Button 
+              <Button
                 onClick={handleManualSubmit}
                 disabled={isSubmitting}
                 className="bg-green-600 hover:bg-green-700"
@@ -275,7 +276,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
               </Button>
             </div>
           </div>
-          
+
           <div className="mt-2">
             <Progress value={progress} className="h-2" />
           </div>
@@ -292,7 +293,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
               onAnswerChange={handleAnswerChange}
               questionNumber={currentQuestionIndex + 1}
             />
-            
+
             {/* Navigation */}
             <div className="flex justify-between mt-6">
               <Button
@@ -302,7 +303,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
               >
                 Câu trước
               </Button>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -311,7 +312,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
                   <Flag className="h-4 w-4 mr-2" />
                   Bỏ qua
                 </Button>
-                
+
                 <Button
                   onClick={() => setCurrentQuestionIndex(Math.min(currentExam.questions.length - 1, currentQuestionIndex + 1))}
                   disabled={currentQuestionIndex === currentExam.questions.length - 1}
@@ -330,7 +331,7 @@ export function ExamTaking({ examId }: ExamTakingProps) {
               currentQuestionIndex={currentQuestionIndex}
               onQuestionSelect={setCurrentQuestionIndex}
             />
-            
+
             {/* Stats */}
             <Card>
               <CardHeader>
@@ -390,14 +391,14 @@ export function ExamTaking({ examId }: ExamTakingProps) {
                 <p>Thời gian còn lại: {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</p>
               </div>
               <div className="flex gap-2 justify-end">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowSubmitConfirm(false)}
                   disabled={isSubmitting}
                 >
                   Hủy
                 </Button>
-                <Button 
+                <Button
                   onClick={() => submitExam(false)}
                   disabled={isSubmitting}
                   className="bg-green-600 hover:bg-green-700"

@@ -1,11 +1,13 @@
 import { ExamResult } from "@/components/users/exams/exam-result";
+import { use } from "react";
 
 interface ExamResultPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ExamResultPage({ params }: ExamResultPageProps) {
-  return <ExamResult examId={params.id} />;
+  const resolvedParams = use(params);
+  return <ExamResult examId={resolvedParams.id} />;
 }

@@ -1,11 +1,13 @@
 import { ExamStart } from "@/components/users/exams/exam-start";
+import { use } from "react";
 
 interface ExamStartPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ExamStartPage({ params }: ExamStartPageProps) {
-  return <ExamStart examId={params.id} />;
+  const resolvedParams = use(params);
+  return <ExamStart examId={resolvedParams.id} />;
 }
