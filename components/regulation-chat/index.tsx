@@ -19,12 +19,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MarkdownRenderer from "@/components/shared/markdown-renderer";
 import { NotebookInfo } from "@/types/user/regulation-chat";
+import { cn } from "@/lib/utils";
 
 export default function RegulationChat() {
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
   const [notebookInfo, setNotebookInfo] = useState<NotebookInfo | null>(null);
   const [isLoadingInfo, setIsLoadingInfo] = useState(true);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [fileListCollapsed, setFileListCollapsed] = useState(false);
   const { user } = useUserStore();
 
   useEffect(() => {
@@ -97,17 +99,38 @@ export default function RegulationChat() {
       {/* Main Content - Full Height */}
       <div className="flex-1 overflow-hidden">
         <div className="container max-w-7xl mx-auto px-6 py-6 h-full">
-          <div className="grid lg:grid-cols-[320px_1fr] gap-0 h-full">
+          <div
+            className={cn(
+              "grid gap-0 h-full transition-all duration-300",
+              fileListCollapsed
+                ? "lg:grid-cols-[48px_1fr]"
+                : "lg:grid-cols-[320px_1fr]"
+            )}
+          >
             {/* Sidebar - File List */}
-            <Card className="overflow-hidden h-full flex flex-col rounded-r-none border-r-0">
+            <Card
+              className={cn(
+                "overflow-hidden h-full flex flex-col",
+                fileListCollapsed
+                  ? "rounded-r-none border-r-0"
+                  : "rounded-r-none border-r-0"
+              )}
+            >
               <RegulationFileList
                 selectedFileIds={selectedFileIds}
                 onSelectionChange={setSelectedFileIds}
+                collapsed={fileListCollapsed}
+                onCollapsedChange={setFileListCollapsed}
               />
             </Card>
 
             {/* Main - Chat Panel */}
-            <Card className="overflow-hidden h-full flex flex-col rounded-l-none border-l">
+            <Card
+              className={cn(
+                "overflow-hidden h-full flex flex-col",
+                fileListCollapsed ? "rounded-l-none border-l" : "rounded-l-none border-l"
+              )}
+            >
               <RegulationChatPanel selectedFileIds={selectedFileIds} />
             </Card>
           </div>

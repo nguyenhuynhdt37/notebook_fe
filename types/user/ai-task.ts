@@ -195,3 +195,154 @@ export interface AiTaskNotification {
   };
   timestamp: string;
 }
+
+// Timeline Types
+export interface GenerateTimelineResponse {
+  aiSetId: string;
+  status: string;
+  success: boolean;
+  message: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  order: number;
+  date: string;
+  datePrecision: "year" | "month" | "day" | "unknown";
+  title: string;
+  description: string;
+  importance: "minor" | "normal" | "major" | "critical";
+  icon?: string;
+}
+
+export interface TimelineResponse {
+  aiSetId: string;
+  title: string;
+  mode: string;
+  totalEvents: number;
+  status: "queued" | "processing" | "done" | "failed";
+  createdAt: string;
+  events: TimelineEvent[];
+  createdBy: {
+    id: string;
+    fullName: string;
+    avatarUrl?: string | null;
+  };
+}
+
+// Quiz Attempt Types
+export interface SubmitAttemptRequest {
+  startedAt?: string;
+  finishedAt?: string;
+  timeSpentSeconds?: number;
+  answers: AnswerItem[];
+}
+
+export interface AnswerItem {
+  quizId: string;
+  selectedOptionId: string;
+}
+
+export interface AttemptResponse {
+  id: string;
+  aiSetId: string;
+  score: number;
+  totalQuestions: number;
+  correctCount: number;
+  timeSpentSeconds?: number;
+  startedAt?: string;
+  finishedAt?: string;
+  createdAt: string;
+  hasAnalysis: boolean;
+  answers?: AttemptAnswerDetail[];
+}
+
+export interface AttemptAnswerDetail {
+  quizId: string;
+  question: string;
+  selectedOptionId?: string;
+  selectedOptionText?: string;
+  correctOptionId: string;
+  correctOptionText: string;
+  isCorrect: boolean;
+}
+
+export interface QuizAnalysisResponse {
+  scoreText: string;
+  summary: string;
+  strengths: TopicAnalysis[];
+  weaknesses: TopicAnalysis[];
+  improvements: TopicAnalysis[];
+  recommendations: string[];
+}
+
+export interface TopicAnalysis {
+  topic: string;
+  analysis: string;
+  suggestions: string[];
+}
+
+// Code Exercise Types
+export interface CodeLanguage {
+  id: string;
+  name: string;
+  version: string;
+}
+
+export interface CodeFile {
+  filename: string;
+  content: string;
+  role: "starter" | "solution" | "user";
+  isMain: boolean;
+}
+
+export interface CodeExerciseTestcase {
+  input: string;
+  expectedOutput: string;
+  isHidden: boolean;
+}
+
+export interface CodeExercise {
+  id: string;
+  title: string;
+  description: string;
+  language: CodeLanguage;
+  files: CodeFile[];
+  testcases: CodeExerciseTestcase[];
+  status?: "passed" | "failed" | "unattempted";
+}
+
+export interface GenerateExerciseRequest {
+  fileIds: string[];
+  prompt?: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  count: number;
+}
+
+export interface RunCodeRequest {
+  files: {
+    filename: string;
+    content: string;
+    isMain: boolean;
+  }[];
+}
+
+export interface RunCodeResult {
+  status: "passed" | "failed" | "runtime_error";
+  passed: number;
+  total: number;
+  details: {
+    input: string;
+    expected: string;
+    actual: string;
+    passed: boolean;
+    isHidden: boolean;
+    error?: string;
+  }[];
+}
+
+export interface ExerciseSolution {
+  filename: string;
+  content: string;
+  role: "solution";
+}

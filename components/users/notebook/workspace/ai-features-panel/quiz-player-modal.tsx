@@ -25,7 +25,10 @@ import {
   QuizListResponse,
   QuizResponse,
   QuizOptionResponse,
+  SubmitAttemptRequest,
+  AttemptResponse,
 } from "@/types/user/ai-task";
+import QuizResultModal from "./quiz-result-modal";
 
 interface QuizPlayerModalProps {
   open: boolean;
@@ -76,6 +79,13 @@ export default function QuizPlayerModal({
   );
   const [correctAnswers, setCorrectAnswers] = useState<Set<string>>(new Set());
   const [showResult, setShowResult] = useState(false);
+  const [startTime] = useState<Date>(() => new Date());
+  const [selectedAnswersMap, setSelectedAnswersMap] = useState<
+    Map<string, string>
+  >(new Map());
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchQuizData = useCallback(async () => {
     if (!notebookId || !aiSetId) return;
@@ -114,6 +124,9 @@ export default function QuizPlayerModal({
 
     setSelectedOptionId(optionId);
     setAnsweredQuestions((prev) => new Set(prev).add(currentQuiz.id));
+    setSelectedAnswersMap((prev) =>
+      new Map(prev).set(currentQuiz.id, optionId)
+    );
 
     // Check if answer is correct
     const selectedOpt = currentQuiz.options.find((o) => o.id === optionId);
@@ -136,8 +149,38 @@ export default function QuizPlayerModal({
     }
   };
 
-  const handleShowResult = () => {
-    setShowResult(true);
+  const handleShowResult = async () => {
+    if (!quizData) return;
+    setSubmitting(true);
+    try {
+      const finishedAt = new Date();
+      const timeSpentSeconds = Math.floor(
+        (finishedAt.getTime() - startTime.getTime()) / 1000
+      );
+      const answers = Array.from(selectedAnswersMap.entries()).map(
+        ([quizId, selectedOptionId]) => ({
+          quizId,
+          selectedOptionId,
+        })
+      );
+      const payload: SubmitAttemptRequest = {
+        startedAt: startTime.toISOString(),
+        finishedAt: finishedAt.toISOString(),
+        timeSpentSeconds,
+        answers,
+      };
+      const res = await api.post<AttemptResponse>(
+        `/user/notebooks/${notebookId}/ai/quiz/${aiSetId}/attempts`,
+        payload
+      );
+      setAttemptId(res.data.id);
+      setShowResult(true);
+      setShowResultModal(true);
+    } catch {
+      setShowResult(true); // Still show local result if submit fails
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleRestart = () => {
@@ -406,6 +449,14 @@ export default function QuizPlayerModal({
                     <Button variant="outline" onClick={handleRestart}>
                       Làm lại
                     </Button>
+                    {attemptId && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowResultModal(true)}
+                      >
+                        Xem phân tích
+                      </Button>
+                    )}
                     <Button onClick={() => onOpenChange(false)}>Đóng</Button>
                   </div>
                 </div>
@@ -431,9 +482,17 @@ export default function QuizPlayerModal({
               </p>
 
               {isLastQuestion && isAnswered ? (
-                <Button onClick={handleShowResult} className="gap-2">
-                  Xem kết quả
-                  <CheckCircle2 className="size-4" />
+                <Button
+                  onClick={handleShowResult}
+                  disabled={submitting}
+                  className="gap-2"
+                >
+                  {submitting ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="size-4" />
+                  )}
+                  {submitting ? "Đang gửi..." : "Xem kết quả"}
                 </Button>
               ) : (
                 <Button
@@ -450,6 +509,17 @@ export default function QuizPlayerModal({
           )}
         </DialogPrimitive.Content>
       </DialogPortal>
+
+      {/* Result Modal */}
+      {attemptId && (
+        <QuizResultModal
+          open={showResultModal}
+          onOpenChange={setShowResultModal}
+          attemptId={attemptId}
+          notebookId={notebookId}
+          aiSetId={aiSetId}
+        />
+      )}
     </Dialog>
   );
 }

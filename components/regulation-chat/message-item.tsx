@@ -51,6 +51,16 @@ export default function MessageItem({
   // Image count for layout
   const imageCount = message.images?.length || 0;
 
+  // Helper to get full image URL
+  const getImageUrl = (fileUrl: string) => {
+    // If fileUrl is already a full URL, use it directly
+    if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+      return fileUrl;
+    }
+    // Otherwise, prepend backend URL
+    return `${process.env.NEXT_PUBLIC_URL_BACKEND || "http://localhost:8386"}${fileUrl}`;
+  };
+
   return (
     <div
       className={cn(
@@ -83,20 +93,10 @@ export default function MessageItem({
                   imageCount === 2 && "w-40 h-40",
                   imageCount >= 3 && "w-32 h-32"
                 )}
-                onClick={() =>
-                  setSelectedImage(
-                    `${
-                      process.env.NEXT_PUBLIC_URL_BACKEND ||
-                      "http://localhost:8386"
-                    }${img.fileUrl}`
-                  )
-                }
+                onClick={() => setSelectedImage(getImageUrl(img.fileUrl))}
               >
                 <img
-                  src={`${
-                    process.env.NEXT_PUBLIC_URL_BACKEND ||
-                    "http://localhost:8386"
-                  }${img.fileUrl}`}
+                  src={getImageUrl(img.fileUrl)}
                   alt={img.fileName}
                   className="w-full h-full object-cover"
                 />

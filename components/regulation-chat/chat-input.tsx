@@ -116,6 +116,16 @@ export default function ChatInput({
     setUploadedImages((prev) => prev.filter((img) => img.id !== id));
   };
 
+  // Helper to get full image URL
+  const getImageUrl = (fileUrl: string) => {
+    // If fileUrl is already a full URL, use it directly
+    if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+      return fileUrl;
+    }
+    // Otherwise, prepend backend URL
+    return `${process.env.NEXT_PUBLIC_URL_BACKEND || "http://localhost:8386"}${fileUrl}`;
+  };
+
   const handleSend = () => {
     if ((!input.trim() && uploadedImages.length === 0) || disabled || isLoading)
       return;
@@ -147,10 +157,7 @@ export default function ChatInput({
                   className="relative group h-20 w-20 rounded-md border overflow-hidden bg-muted"
                 >
                   <img
-                    src={`${
-                      process.env.NEXT_PUBLIC_URL_BACKEND ||
-                      "http://localhost:8386"
-                    }${img.fileUrl}`}
+                    src={getImageUrl(img.fileUrl)}
                     alt={img.fileName}
                     className="h-full w-full object-cover"
                   />

@@ -16,6 +16,7 @@ import {
   ClipboardList,
   StickyNote,
   Video,
+  Code2,
 } from "lucide-react";
 import FeatureCard from "./feature-card";
 
@@ -109,6 +110,12 @@ const AI_FEATURES = [
     icon: StickyNote,
     title: "Ghi chú",
     description: "Tạo ghi chú thông minh từ tài liệu",
+  },
+  {
+    id: "code-exercise",
+    icon: Code2,
+    title: "Code Exercises",
+    description: "Tạo bài tập lập trình tự động từ tài liệu",
   },
 ] as const;
 

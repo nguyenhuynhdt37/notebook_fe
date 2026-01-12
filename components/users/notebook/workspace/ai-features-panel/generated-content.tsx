@@ -11,6 +11,7 @@ import MindmapViewerModal from "./mindmap-viewer-modal";
 import SuggestionViewerModal from "./suggestion-viewer-modal";
 import VideoViewerModal from "./video-viewer-modal";
 import SummaryViewerModal from "./summary-viewer-modal";
+import TimelineViewerModal from "./timeline-viewer-modal";
 
 interface AudioInfo {
   id: string;
@@ -37,6 +38,7 @@ export default function GeneratedContent({
   const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   const fetchSets = useCallback(async () => {
@@ -77,6 +79,7 @@ export default function GeneratedContent({
     setSuggestionModalOpen(false);
     setVideoModalOpen(false);
     setSummaryModalOpen(false);
+    setTimelineModalOpen(false);
 
     setSelectedSetId(setId);
 
@@ -106,6 +109,9 @@ export default function GeneratedContent({
         break;
       case "video":
         setVideoModalOpen(true);
+        break;
+      case "timeline":
+        setTimelineModalOpen(true);
         break;
       default:
         toast.error(`Định dạng không được hỗ trợ: ${type}`);
@@ -216,6 +222,14 @@ export default function GeneratedContent({
         <SummaryViewerModal
           open={summaryModalOpen}
           onOpenChange={setSummaryModalOpen}
+          notebookId={notebookId}
+          aiSetId={selectedSetId}
+        />
+      )}
+      {selectedSetId && (
+        <TimelineViewerModal
+          open={timelineModalOpen}
+          onOpenChange={setTimelineModalOpen}
           notebookId={notebookId}
           aiSetId={selectedSetId}
         />
