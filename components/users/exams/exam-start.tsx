@@ -23,7 +23,7 @@ export function ExamStart({ examId }: ExamStartProps) {
   const [academicIntegrityAcknowledged, setAcademicIntegrityAcknowledged] = useState(false);
   const [rulesAcknowledged, setRulesAcknowledged] = useState(false);
   const router = useRouter();
-  const { setCurrentExam, clearExamData } = useStudentExamStore();
+  const { setCurrentExam, clearExamData, setTimeRemaining } = useStudentExamStore();
 
   useEffect(() => {
     loadExamInfo();
@@ -35,13 +35,13 @@ export function ExamStart({ examId }: ExamStartProps) {
     try {
       const availableExams = await examApi.getAvailableExams();
       const examInfo = availableExams.find(e => e.id === examId);
-      
+
       if (!examInfo) {
         toast.error("Không tìm thấy thông tin đề thi");
         router.push("/exams");
         return;
       }
-      
+
       setExam(examInfo);
     } catch (error) {
       console.error("Error loading exam info:", error);
@@ -55,11 +55,11 @@ export function ExamStart({ examId }: ExamStartProps) {
   const getBrowserInfo = (): BrowserInfo => {
     const userAgent = navigator.userAgent;
     const screen = window.screen;
-    
+
     // Simple browser detection
     let browserName = "Unknown";
     let browserVersion = "Unknown";
-    
+
     if (userAgent.includes("Chrome")) {
       browserName = "Chrome";
       const match = userAgent.match(/Chrome\/([0-9.]+)/);
@@ -89,7 +89,7 @@ export function ExamStart({ examId }: ExamStartProps) {
 
   const handleStartExam = async () => {
     if (!exam) return;
-    
+
     if (!academicIntegrityAcknowledged || !rulesAcknowledged) {
       toast.error("Vui lòng xác nhận tất cả các điều khoản");
       return;
@@ -116,13 +116,14 @@ export function ExamStart({ examId }: ExamStartProps) {
       // Start exam
       const browserInfo = getBrowserInfo();
       const examData = await examApi.startExam(examId, browserInfo);
-      
+
       // Store exam data
       setCurrentExam(examData);
-      
+      setTimeRemaining(examData.remainingTimeSeconds);
+
       // Navigate to exam taking page
       router.push(`/exams/${examId}/take`);
-      
+
     } catch (error) {
       console.error("Error starting exam:", error);
       toast.error("Không thể bắt đầu đề thi");
@@ -162,8 +163,8 @@ export function ExamStart({ examId }: ExamStartProps) {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => router.push("/exams")}
           >
@@ -230,30 +231,30 @@ export function ExamStart({ examId }: ExamStartProps) {
                   <p>• Hệ thống sẽ tự động nộp bài khi hết thời gian</p>
                   <p>• Mọi hành vi gian lận sẽ được ghi nhận và xử lý</p>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-3">
                   <div className="flex items-start space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id="academic-integrity"
                       checked={academicIntegrityAcknowledged}
                       onCheckedChange={(checked) => setAcademicIntegrityAcknowledged(checked as boolean)}
                     />
                     <label htmlFor="academic-integrity" className="text-sm leading-relaxed">
-                      Tôi cam kết tuân thủ các quy định về tính trung thực học thuật và không sử dụng 
+                      Tôi cam kết tuân thủ các quy định về tính trung thực học thuật và không sử dụng
                       bất kỳ hình thức gian lận nào trong quá trình làm bài thi.
                     </label>
                   </div>
-                  
+
                   <div className="flex items-start space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id="rules"
                       checked={rulesAcknowledged}
                       onCheckedChange={(checked) => setRulesAcknowledged(checked as boolean)}
                     />
                     <label htmlFor="rules" className="text-sm leading-relaxed">
-                      Tôi đã đọc và hiểu rõ tất cả các quy định thi. Tôi đồng ý tuân thủ 
+                      Tôi đã đọc và hiểu rõ tất cả các quy định thi. Tôi đồng ý tuân thủ
                       các quy định này trong suốt quá trình làm bài.
                     </label>
                   </div>
@@ -295,11 +296,11 @@ export function ExamStart({ examId }: ExamStartProps) {
                   <div className="text-center space-y-2">
                     <p className="text-sm text-muted-foreground">
                       {exam.isTimeUp ? "Đề thi đã hết hạn" :
-                       !exam.isActive ? "Đề thi chưa mở" :
-                       exam.remainingAttempts === 0 ? "Đã hết lượt thi" :
-                       "Không thể thi"}
+                        !exam.isActive ? "Đề thi chưa mở" :
+                          exam.remainingAttempts === 0 ? "Đã hết lượt thi" :
+                            "Không thể thi"}
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => router.push("/exams")}
                       variant="outline"
                       className="w-full"
@@ -308,7 +309,7 @@ export function ExamStart({ examId }: ExamStartProps) {
                     </Button>
                   </div>
                 ) : (
-                  <Button 
+                  <Button
                     onClick={handleStartExam}
                     disabled={!academicIntegrityAcknowledged || !rulesAcknowledged || isStarting}
                     className="w-full"

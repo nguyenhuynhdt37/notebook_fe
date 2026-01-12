@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Users, FileText, Calendar } from "lucide-react";
+import { Clock, Users, HelpCircle, Calendar, FileText, PlayCircle, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -28,7 +28,6 @@ export function ExamList() {
       const examData = await examApi.getAvailableExams();
       setExams(examData);
     } catch (error) {
-      console.error("Error loading available exams:", error);
       toast.error("Không thể tải danh sách đề thi");
     } finally {
       setIsLoading(false);
@@ -40,23 +39,23 @@ export function ExamList() {
   };
 
   const getExamStatus = (exam: AvailableExam) => {
-    if (exam.isTimeUp) return { label: "Hết hạn", color: "bg-red-100 text-red-800" };
-    if (!exam.isActive) return { label: "Chưa mở", color: "bg-gray-100 text-gray-800" };
-    if (!exam.canTakeExam) return { label: "Không thể thi", color: "bg-yellow-100 text-yellow-800" };
-    if (exam.remainingAttempts === 0) return { label: "Hết lượt thi", color: "bg-orange-100 text-orange-800" };
-    return { label: "Có thể thi", color: "bg-green-100 text-green-800" };
+    if (exam.isTimeUp) return { label: "Hết hạn", variant: "destructive" as const };
+    if (!exam.isActive) return { label: "Chưa mở", variant: "secondary" as const };
+    if (!exam.canTakeExam) return { label: "Không thể thi", variant: "outline" as const };
+    if (exam.remainingAttempts === 0) return { label: "Hết lượt", variant: "outline" as const };
+    return { label: "Có thể thi", variant: "default" as const };
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <div className="grid gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-48 w-full" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-52" />
           ))}
         </div>
       </div>
@@ -64,101 +63,111 @@ export function ExamList() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Danh sách đề thi</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Danh sách đề thi</h1>
+        <p className="text-sm text-muted-foreground">
           Các đề thi có sẵn cho bạn
         </p>
       </div>
 
       {exams.length === 0 ? (
-        <Card>
+        <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Không có đề thi nào</h3>
-            <p className="text-muted-foreground text-center">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-medium mb-1">Không có đề thi nào</h3>
+            <p className="text-sm text-muted-foreground text-center">
               Hiện tại không có đề thi nào khả dụng cho bạn.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {exams.map((exam) => {
             const status = getExamStatus(exam);
             const canStart = exam.canTakeExam && exam.isActive && !exam.isTimeUp && exam.remainingAttempts > 0;
-            
+            const hasAttempted = exam.remainingAttempts < exam.maxAttempts;
+
             return (
-              <Card key={exam.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{exam.title}</CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {exam.className}
-                        </span>
-                        <span>{exam.subjectName}</span>
-                      </div>
+              <Card key={exam.id} className="group transition-all hover:border-foreground/20">
+                <CardContent className="p-5">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="min-w-0">
+                      <h3 className="font-medium truncate">{exam.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                        <Users className="h-3 w-3" />
+                        {exam.className}
+                        <span className="mx-1">·</span>
+                        {exam.subjectName}
+                      </p>
                     </div>
-                    <Badge className={status.color}>
+                    <Badge variant={status.variant} className="shrink-0">
                       {status.label}
                     </Badge>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Bắt đầu</p>
-                        <p className="text-muted-foreground">
-                          {format(new Date(exam.startTime), "dd/MM/yyyy HH:mm", { locale: vi })}
+
+                  {/* Time Info */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground">Bắt đầu</p>
+                        <p className="font-medium text-xs">
+                          {format(new Date(exam.startTime), "dd/MM/yyyy HH:mm")}
                         </p>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Kết thúc</p>
-                        <p className="text-muted-foreground">
-                          {format(new Date(exam.endTime), "dd/MM/yyyy HH:mm", { locale: vi })}
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground">Kết thúc</p>
+                        <p className="font-medium text-xs">
+                          {format(new Date(exam.endTime), "dd/MM/yyyy HH:mm")}
                         </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Thời gian</p>
-                        <p className="text-muted-foreground">{exam.durationMinutes} phút</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Câu hỏi</p>
-                        <p className="text-muted-foreground">{exam.totalQuestions} câu</p>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="text-sm text-muted-foreground">
-                      Lượt thi còn lại: <span className="font-medium">{exam.remainingAttempts}/{exam.maxAttempts}</span>
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {exam.durationMinutes} phút
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <HelpCircle className="h-3.5 w-3.5" />
+                      {exam.totalQuestions} câu
+                    </span>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-3 border-t">
+                    <p className={`text-xs ${exam.remainingAttempts === 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      Lượt thi còn lại: {exam.remainingAttempts}/{exam.maxAttempts}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {hasAttempted && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/exams/${exam.id}/result`)}
+                        >
+                          <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
+                          Xem kết quả
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        onClick={() => handleStartExam(exam.id)}
+                        disabled={!canStart}
+                      >
+                        <PlayCircle className="mr-1.5 h-3.5 w-3.5" />
+                        Bắt đầu thi
+                      </Button>
                     </div>
-                    
-                    <Button 
-                      onClick={() => handleStartExam(exam.id)}
-                      disabled={!canStart}
-                      className="min-w-[100px]"
-                    >
-                      {canStart ? "Bắt đầu thi" : "Không thể thi"}
-                    </Button>
                   </div>
                 </CardContent>
               </Card>

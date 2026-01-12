@@ -22,11 +22,11 @@ interface ClassStudent {
 }
 
 interface ClassMembersResponse {
-  content: ClassStudent[];
+  items: ClassStudent[];
   meta: {
     page: number;
     size: number;
-    totalElements: number;
+    total: number;
     totalPages: number;
   };
 }
@@ -75,9 +75,9 @@ export default function ClassMembers({ classId }: ClassMembersProps) {
     return <MemberSkeleton />;
   }
 
-  const totalElements = data?.meta?.totalElements || 0;
+  const totalElements = data?.meta?.total || 0;
   const totalPages = data?.meta?.totalPages || 0;
-  const students = data?.content || [];
+  const students = data?.items || [];
 
   return (
     <div className="space-y-4">

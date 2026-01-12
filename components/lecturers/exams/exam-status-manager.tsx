@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Send, Play, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import examApi from "@/api/client/exam";
 import { ExamDetailResponse } from "@/types/lecturer/exam";
@@ -38,7 +39,6 @@ export function ExamStatusManager({ exam, onUpdate }: ExamStatusManagerProps) {
       toast.success("Đã xuất bản đề thi thành công");
       onUpdate();
     } catch (error: any) {
-      console.error("Error publishing exam:", error);
       const errorMessage = error.response?.data?.message || "Không thể xuất bản đề thi";
       toast.error(errorMessage);
     } finally {
@@ -53,7 +53,6 @@ export function ExamStatusManager({ exam, onUpdate }: ExamStatusManagerProps) {
       toast.success("Đã kích hoạt đề thi thành công");
       onUpdate();
     } catch (error: any) {
-      console.error("Error activating exam:", error);
       const errorMessage = error.response?.data?.message || "Không thể kích hoạt đề thi";
       toast.error(errorMessage);
     } finally {
@@ -68,7 +67,6 @@ export function ExamStatusManager({ exam, onUpdate }: ExamStatusManagerProps) {
       toast.success("Đã hủy đề thi thành công");
       onUpdate();
     } catch (error: any) {
-      console.error("Error cancelling exam:", error);
       const errorMessage = error.response?.data?.message || "Không thể hủy đề thi";
       toast.error(errorMessage);
     } finally {
@@ -76,121 +74,85 @@ export function ExamStatusManager({ exam, onUpdate }: ExamStatusManagerProps) {
     }
   };
 
-  const getStatusInfo = () => {
-    switch (exam.status) {
-      case "DRAFT":
-        return {
-          label: "Soạn thảo",
-          color: "bg-gray-100 text-gray-800",
-          description: "Đề thi đang được soạn thảo, có thể chỉnh sửa",
-          actions: (
+  const CancelButton = ({ warning }: { warning?: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="sm" disabled={isLoading} className="text-muted-foreground hover:text-red-600">
+          <XCircle className="mr-1.5 h-3.5 w-3.5" />
+          Hủy
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Xác nhận hủy đề thi</AlertDialogTitle>
+          <AlertDialogDescription>
+            {warning || "Bạn có chắc chắn muốn hủy đề thi này? Hành động này không thể hoàn tác."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Quay lại</AlertDialogCancel>
+          <AlertDialogAction onClick={handleCancel} className="bg-red-600 hover:bg-red-700">
+            Xác nhận hủy
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
+  switch (exam.status) {
+    case "DRAFT":
+      return (
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">Bản nháp</Badge>
+          <span className="text-xs text-muted-foreground">Có thể chỉnh sửa</span>
+          <div className="ml-auto">
             <Button 
+              size="sm"
               onClick={handlePublish} 
               disabled={isLoading || !exam.questions || exam.questions.length === 0}
             >
+              <Send className="mr-1.5 h-3.5 w-3.5" />
               Xuất bản
             </Button>
-          )
-        };
-      case "PUBLISHED":
-        return {
-          label: "Đã xuất bản",
-          color: "bg-blue-100 text-blue-800",
-          description: "Đề thi đã được chốt, không thể chỉnh sửa",
-          actions: (
-            <div className="flex gap-2">
-              <Button onClick={handleActivate} disabled={isLoading}>
-                Kích hoạt
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={isLoading}>
-                    Hủy đề thi
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Xác nhận hủy đề thi</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Bạn có chắc chắn muốn hủy đề thi này? Hành động này không thể hoàn tác.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Hủy</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancel}>
-                      Xác nhận hủy
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )
-        };
-      case "ACTIVE":
-        return {
-          label: "Đang diễn ra",
-          color: "bg-green-100 text-green-800",
-          description: "Đề thi đang được mở cho sinh viên làm bài",
-          actions: (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={isLoading}>
-                  Hủy đề thi
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Xác nhận hủy đề thi</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Đề thi đang diễn ra. Hủy đề thi sẽ ảnh hưởng đến sinh viên đang làm bài. 
-                    Bạn có chắc chắn muốn tiếp tục?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Hủy</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleCancel}>
-                    Xác nhận hủy
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )
-        };
-      case "CANCELLED":
-        return {
-          label: "Đã hủy",
-          color: "bg-red-100 text-red-800",
-          description: "Đề thi đã bị hủy",
-          actions: null
-        };
-      default:
-        return {
-          label: "Không xác định",
-          color: "bg-gray-100 text-gray-800",
-          description: "Trạng thái không xác định",
-          actions: null
-        };
-    }
-  };
-
-  const statusInfo = getStatusInfo();
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Badge className={statusInfo.color}>
-          {statusInfo.label}
-        </Badge>
-        <p className="text-sm text-muted-foreground">
-          {statusInfo.description}
-        </p>
-      </div>
-      
-      {statusInfo.actions && (
-        <div className="flex gap-2">
-          {statusInfo.actions}
+          </div>
         </div>
-      )}
-    </div>
-  );
+      );
+
+    case "PUBLISHED":
+      return (
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">Đã xuất bản</Badge>
+          <span className="text-xs text-muted-foreground">Sẵn sàng kích hoạt</span>
+          <div className="ml-auto flex items-center gap-1">
+            <CancelButton />
+            <Button size="sm" onClick={handleActivate} disabled={isLoading}>
+              <Play className="mr-1.5 h-3.5 w-3.5" />
+              Kích hoạt
+            </Button>
+          </div>
+        </div>
+      );
+
+    case "ACTIVE":
+      return (
+        <div className="flex items-center gap-2">
+          <Badge variant="default">Đang diễn ra</Badge>
+          <span className="text-xs text-muted-foreground">Sinh viên đang làm bài</span>
+          <div className="ml-auto">
+            <CancelButton warning="Đề thi đang diễn ra. Hủy sẽ ảnh hưởng đến sinh viên đang làm bài. Bạn có chắc chắn?" />
+          </div>
+        </div>
+      );
+
+    case "CANCELLED":
+      return (
+        <div className="flex items-center gap-2">
+          <Badge variant="destructive">Đã hủy</Badge>
+          <span className="text-xs text-muted-foreground">Đề thi đã bị hủy</span>
+        </div>
+      );
+
+    default:
+      return null;
+  }
 }

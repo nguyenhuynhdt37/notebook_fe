@@ -1,13 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, FileText } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Eye, Trash2, Clock, Users, HelpCircle, Calendar, MoreHorizontal } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import Link from "next/link";
-import api from "@/api/client/axios";
 import { ExamResponse } from "@/types/lecturer";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -20,24 +36,19 @@ interface ExamCardProps {
 }
 
 const statusConfig = {
-  DRAFT: { label: "Soạn thảo", variant: "secondary" as const, color: "bg-gray-100 text-gray-800" },
-  PUBLISHED: { label: "Đã xuất bản", variant: "default" as const, color: "bg-blue-100 text-blue-800" },
-  ACTIVE: { label: "Đang diễn ra", variant: "default" as const, color: "bg-green-100 text-green-800" },
-  CANCELLED: { label: "Đã hủy", variant: "destructive" as const, color: "bg-red-100 text-red-800" },
+  DRAFT: { label: "Bản nháp", variant: "secondary" as const },
+  PUBLISHED: { label: "Đã xuất bản", variant: "outline" as const },
+  ACTIVE: { label: "Đang thi", variant: "default" as const },
+  CANCELLED: { label: "Đã hủy", variant: "destructive" as const },
 };
 
 export function ExamCard({ exam, onUpdate }: ExamCardProps) {
   const status = statusConfig[exam.status];
   const startTime = new Date(exam.startTime);
-  const endTime = new Date(exam.endTime);
-  const now = new Date();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("Bạn có chắc chắn muốn xóa đề thi này không?")) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await examApi.deleteExam(exam.id);
@@ -47,77 +58,136 @@ export function ExamCard({ exam, onUpdate }: ExamCardProps) {
       toast.error("Có lỗi xảy ra khi xóa đề thi");
     } finally {
       setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md">
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-medium">{exam.title}</h3>
-              <Badge className={status.color}>{status.label}</Badge>
+    <>
+      <Card className="group transition-all hover:border-foreground/20">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-4">
+            {/* Left: Main Info */}
+            <div className="flex-1 min-w-0 space-y-3">
+              {/* Title & Status */}
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link 
+                      href={`/lecturer/exams/${exam.id}/preview`}
+                      className="font-medium hover:underline truncate"
+                    >
+                      {exam.title}
+                    </Link>
+                    <Badge variant={status.variant} className="shrink-0">
+                      {status.label}
+                    </Badge>
+                  </div>
+                  {exam.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                      {exam.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Meta Info */}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  <span>{exam.className || "Chưa gán lớp"}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span>{exam.totalQuestions} câu hỏi</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{exam.durationMinutes} phút</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>
+                    {startTime.toLocaleDateString("vi-VN", { 
+                      day: "2-digit", 
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Status Actions */}
+              <ExamStatusManager exam={exam} onUpdate={onUpdate} />
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {exam.description}
-            </p>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                <Link href={`/lecturer/exams/${exam.id}/preview`}>
+                  <Eye className="h-4 w-4" />
+                </Link>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/lecturer/exams/${exam.id}/preview`}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Xem chi tiết
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-red-600 focus:text-red-600"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Xóa đề thi
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleDelete}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t text-xs text-muted-foreground">
+            <span>Điểm đạt: {exam.passingScore}</span>
+            <span>
+              Tạo {formatDistanceToNow(new Date(exam.createdAt), { addSuffix: true, locale: vi })}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa đề thi</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa đề thi "{exam.title}"? 
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete} 
               disabled={isDeleting}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="bg-red-600 hover:bg-red-700"
             >
-              <FileText className="mr-2 h-4 w-4" />
-              {isDeleting ? "Đang xóa..." : "Xóa"}
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/lecturer/exams/${exam.id}/preview`}>
-                <Eye className="mr-2 h-4 w-4" />
-                Xem chi tiết
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-muted-foreground">Lớp học:</span>
-            <p className="font-medium">{exam.className || "Chưa xác định"}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Thời gian:</span>
-            <p className="font-medium">{exam.durationMinutes} phút</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Số câu hỏi:</span>
-            <p className="font-medium">{exam.totalQuestions} câu</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Điểm đạt:</span>
-            <p className="font-medium">{exam.passingScore} điểm</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between text-sm">
-          <div className="text-muted-foreground">
-            Bắt đầu: {startTime.toLocaleDateString("vi-VN")} {startTime.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-          </div>
-          <div className="text-muted-foreground">
-            Tạo {formatDistanceToNow(new Date(exam.createdAt), { addSuffix: true, locale: vi })}
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between pt-2">
-          <ExamStatusManager exam={exam} onUpdate={onUpdate} />
-        </div>
-      </CardContent>
-    </Card>
+              {isDeleting ? "Đang xóa..." : "Xóa đề thi"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

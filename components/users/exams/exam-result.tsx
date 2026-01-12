@@ -39,7 +39,9 @@ export function ExamResult({ examId }: ExamResultProps) {
     }
   };
 
-  const getGradeColor = (grade: string) => {
+  const getGradeColor = (grade: string | null | undefined) => {
+    if (!grade) return "bg-gray-100 text-gray-800";
+
     switch (grade.toUpperCase()) {
       case "A": case "A+": return "bg-green-100 text-green-800";
       case "B": case "B+": return "bg-blue-100 text-blue-800";
@@ -51,7 +53,7 @@ export function ExamResult({ examId }: ExamResultProps) {
   };
 
   const getPassStatus = (isPassed: boolean) => {
-    return isPassed 
+    return isPassed
       ? { label: "Đạt", color: "bg-green-100 text-green-800", icon: CheckCircle }
       : { label: "Không đạt", color: "bg-red-100 text-red-800", icon: XCircle };
   };
@@ -88,8 +90,8 @@ export function ExamResult({ examId }: ExamResultProps) {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => router.push("/exams")}
           >
@@ -123,7 +125,7 @@ export function ExamResult({ examId }: ExamResultProps) {
                       {result.percentageScore.toFixed(1)}%
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-center gap-4">
                     <Badge className={getGradeColor(result.grade)} variant="secondary">
                       Xếp loại: {result.grade}
@@ -133,7 +135,7 @@ export function ExamResult({ examId }: ExamResultProps) {
                       {passStatus.label}
                     </Badge>
                   </div>
-                  
+
                   <Progress value={result.percentageScore} className="h-3" />
                 </div>
               </CardContent>
@@ -158,7 +160,7 @@ export function ExamResult({ examId }: ExamResultProps) {
                       {((result.correctAnswers / result.totalQuestions) * 100).toFixed(1)}%
                     </div>
                   </div>
-                  
+
                   <div className="text-center space-y-2">
                     <div className="text-2xl font-bold text-red-600">
                       {result.incorrectAnswers}
@@ -168,7 +170,7 @@ export function ExamResult({ examId }: ExamResultProps) {
                       {((result.incorrectAnswers / result.totalQuestions) * 100).toFixed(1)}%
                     </div>
                   </div>
-                  
+
                   <div className="text-center space-y-2">
                     <div className="text-2xl font-bold text-orange-600">
                       {result.skippedQuestions}
@@ -178,7 +180,7 @@ export function ExamResult({ examId }: ExamResultProps) {
                       {((result.skippedQuestions / result.totalQuestions) * 100).toFixed(1)}%
                     </div>
                   </div>
-                  
+
                   <div className="text-center space-y-2">
                     <div className="text-2xl font-bold text-blue-600">
                       {result.totalQuestions}
@@ -200,21 +202,21 @@ export function ExamResult({ examId }: ExamResultProps) {
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Câu trả lời đúng</span>
                     <div className="flex items-center gap-2">
-                      <Progress 
-                        value={(result.correctAnswers / result.totalQuestions) * 100} 
-                        className="w-24 h-2" 
+                      <Progress
+                        value={(result.correctAnswers / result.totalQuestions) * 100}
+                        className="w-24 h-2"
                       />
                       <span className="text-sm font-medium w-12 text-right">
                         {result.correctAnswers}/{result.totalQuestions}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Câu trả lời sai</span>
                     <div className="flex items-center gap-2">
-                      <Progress 
-                        value={(result.incorrectAnswers / result.totalQuestions) * 100} 
+                      <Progress
+                        value={(result.incorrectAnswers / result.totalQuestions) * 100}
                         className="w-24 h-2"
                       />
                       <span className="text-sm font-medium w-12 text-right">
@@ -222,12 +224,12 @@ export function ExamResult({ examId }: ExamResultProps) {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Câu bỏ qua</span>
                     <div className="flex items-center gap-2">
-                      <Progress 
-                        value={(result.skippedQuestions / result.totalQuestions) * 100} 
+                      <Progress
+                        value={(result.skippedQuestions / result.totalQuestions) * 100}
                         className="w-24 h-2"
                       />
                       <span className="text-sm font-medium w-12 text-right">
@@ -268,13 +270,13 @@ export function ExamResult({ examId }: ExamResultProps) {
             {/* Actions */}
             <Card>
               <CardContent className="pt-6 space-y-3">
-                <Button 
+                <Button
                   onClick={() => router.push("/exams")}
                   className="w-full"
                 >
                   Xem đề thi khác
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => window.print()}
                   className="w-full"
