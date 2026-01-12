@@ -1,13 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, Loader2, Search } from "lucide-react";
+import {
+  FileText,
+  Loader2,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import api from "@/api/client/axios";
 import {
@@ -18,13 +31,22 @@ import {
 export default function RegulationFileList({
   selectedFileIds,
   onSelectionChange,
+  collapsed: externalCollapsed,
+  onCollapsedChange,
 }: {
   selectedFileIds: string[];
   onSelectionChange: (ids: string[]) => void;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }) {
   const [files, setFiles] = useState<RegulationFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+
+  const collapsed =
+    externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+  const setCollapsed = onCollapsedChange || setInternalCollapsed;
 
   useEffect(() => {
     loadFiles();
@@ -81,17 +103,77 @@ export default function RegulationFileList({
     filteredFiles.length > 0 && selectedFileIds.length === filteredFiles.length;
   const someSelected = selectedFileIds.length > 0 && !allSelected;
 
+  // Collapsed state - thin sidebar with icon only
+  if (collapsed) {
+    return (
+      <div className="h-full w-12 flex flex-col bg-background border-r border-border/50">
+        {/* Toggle button */}
+        <div className="p-2 border-b border-border/50">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCollapsed(false)}
+                  className="size-8"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Mở rộng danh sách</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* File icon indicator */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <FileText className="size-5 text-primary" />
+            {selectedFileIds.length > 0 && (
+              <Badge variant="default" className="text-[10px] h-5 px-1.5">
+                {selectedFileIds.length}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded state - full file list
   return (
     <>
       <CardHeader className="border-b space-y-2 pb-3 shrink-0">
         <div className="space-y-0.5">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Danh sách tài liệu</CardTitle>
-            {selectedFileIds.length > 0 && (
-              <Badge variant="default" className="text-xs">
-                {selectedFileIds.length}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">Danh sách tài liệu</CardTitle>
+              {selectedFileIds.length > 0 && (
+                <Badge variant="default" className="text-xs">
+                  {selectedFileIds.length}
+                </Badge>
+              )}
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setCollapsed(true)}
+                    className="size-8"
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Thu nhỏ</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <p className="text-xs text-muted-foreground">
             {files.length} tài liệu

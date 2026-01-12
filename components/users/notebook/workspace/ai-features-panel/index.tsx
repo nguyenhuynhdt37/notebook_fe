@@ -32,6 +32,9 @@ import MindmapGenerateModal from "./mindmap-generate-modal";
 import SuggestionGenerateModal from "./suggestion-generate-modal";
 import VideoGenerateModal from "./video-generate-modal";
 import SummaryGenerateModal from "./summary-generate-modal";
+import TimelineGenerateModal from "./timeline-generate-modal";
+import CodeExerciseGenerateModal from "./code-exercise/code-exercise-generate-modal";
+import CodeExercisePlayer from "./code-exercise/code-exercise-player";
 import AiTaskWebSocket from "./ai-task-websocket";
 import { getCookie } from "@/lib/utils/cookie";
 import { useUserStore } from "@/stores/user";
@@ -74,6 +77,11 @@ export default function AIFeaturesPanel({
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [timelineModalOpen, setTimelineModalOpen] = useState(false);
+  const [codeExerciseModalOpen, setCodeExerciseModalOpen] = useState(false);
+  const [activeCodeExerciseSetId, setActiveCodeExerciseSetId] = useState<
+    string | null
+  >(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentAudio, setCurrentAudio] = useState<AudioInfo | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -105,6 +113,12 @@ export default function AIFeaturesPanel({
         break;
       case "summary":
         setSummaryModalOpen(true);
+        break;
+      case "timeline":
+        setTimelineModalOpen(true);
+        break;
+      case "code-exercise":
+        setCodeExerciseModalOpen(true);
         break;
       default:
         console.log(`Feature clicked: ${featureId}`);
@@ -253,6 +267,14 @@ export default function AIFeaturesPanel({
           onSuccess={handleGenerateSuccess}
         />
 
+        <TimelineGenerateModal
+          open={timelineModalOpen}
+          onOpenChange={setTimelineModalOpen}
+          notebookId={notebookId}
+          selectedFileIds={selectedFileIds}
+          onSuccess={handleGenerateSuccess}
+        />
+
         {/* WebSocket for AI Task Progress */}
         <AiTaskWebSocket
           notebookId={notebookId}
@@ -375,6 +397,39 @@ export default function AIFeaturesPanel({
         notebookId={notebookId}
         selectedFileIds={selectedFileIds}
         onSuccess={handleGenerateSuccess}
+      />
+
+      <TimelineGenerateModal
+        open={timelineModalOpen}
+        onOpenChange={setTimelineModalOpen}
+        notebookId={notebookId}
+        selectedFileIds={selectedFileIds}
+        onSuccess={handleGenerateSuccess}
+      />
+
+      {/* Code Exercise Player (Full Screen Overlay) */}
+      {activeCodeExerciseSetId && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <CodeExercisePlayer
+            notebookId={notebookId}
+            aiSetId={activeCodeExerciseSetId}
+            onBack={() => {
+              setActiveCodeExerciseSetId(null);
+              handleGenerateSuccess();
+            }}
+          />
+        </div>
+      )}
+
+      {/* Code Exercise Generate Modal */}
+      <CodeExerciseGenerateModal
+        open={codeExerciseModalOpen}
+        onOpenChange={setCodeExerciseModalOpen}
+        notebookId={notebookId}
+        selectedFileIds={selectedFileIds}
+        onSuccess={(aiSetId) => {
+          setActiveCodeExerciseSetId(aiSetId);
+        }}
       />
     </div>
   );
